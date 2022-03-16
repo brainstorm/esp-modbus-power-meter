@@ -16,13 +16,14 @@
 #include "Logging.h"
 
 // Definitions for this special case
-#define RXPIN GPIO_NUM_16
-#define TXPIN GPIO_NUM_17
-#define REDEPIN GPIO_NUM_4
+#define RXPIN GPIO_NUM_26
+#define TXPIN GPIO_NUM_21
+#define REDEPIN GPIO_NUM_7
 #define BAUDRATE 9600
-#define FIRST_REGISTER 0x002A
-#define NUM_VALUES 21
-#define READ_INTERVAL 10000
+//#define FIRST_REGISTER 0x002A
+#define FIRST_REGISTER 0x0001
+#define NUM_VALUES 4
+#define READ_INTERVAL 1000
 
 bool data_ready = false;
 float values[NUM_VALUES];
@@ -31,6 +32,7 @@ uint32_t request_time;
 // Create a ModbusRTU client instance
 // The RS485 module has no halfduplex, so the second parameter with the DE/RE pin is required!
 ModbusClientRTU MB(Serial1, REDEPIN);
+//ModbusClientRTU MB(Serial1);
 
 // Define an onData handler function to receive the regular responses
 // Arguments are received response message and the request's token
@@ -60,11 +62,11 @@ void handleError(Error error, uint32_t token)
 // Setup() - initialization happens here
 void setup() {
 // Init Serial monitor
-  Serial.begin(115200);
+  Serial.begin(921600);
   while (!Serial) {}
   Serial.println("__ OK __");
 
-// Set up Serial2 connected to Modbus RTU
+// Set up Serial1 connected to Modbus RTU
   Serial1.begin(BAUDRATE, SERIAL_8N1, RXPIN, TXPIN);
 
 // Set up ModbusRTU client.
