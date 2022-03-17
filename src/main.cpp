@@ -16,13 +16,13 @@
 #include "Logging.h"
 
 // Definitions for this special case
-#define RXPIN GPIO_NUM_19
-#define TXPIN GPIO_NUM_18
+#define RXPIN GPIO_NUM_8
+#define TXPIN GPIO_NUM_6
 #define REDEPIN GPIO_NUM_17
 #define BAUDRATE 9600
 //#define FIRST_REGISTER 0x002A
 #define FIRST_REGISTER 0x001d
-#define NUM_VALUES 1
+#define NUM_VALUES 2
 #define READ_INTERVAL 1000
 
 bool data_ready = false;
@@ -67,7 +67,7 @@ void setup() {
   Serial.println("__ OK __");
 
 // Set up Serial1 connected to Modbus RTU
-  Serial1.begin(BAUDRATE, SERIAL_, RXPIN, TXPIN);
+  Serial1.begin(BAUDRATE, SERIAL_8E1, RXPIN, TXPIN);
 
 // Set up ModbusRTU client.
 // - provide onData handler function
@@ -89,7 +89,7 @@ void loop() {
     // Yes.
     data_ready = false;
     // Issue the request
-    Error err = MB.addRequest((uint32_t)millis(), 1, READ_INPUT_REGISTER, FIRST_REGISTER, NUM_VALUES * 2);
+    Error err = MB.addRequest((uint32_t)millis(), 1, READ_HOLD_REGISTER, FIRST_REGISTER, NUM_VALUES * 2);
     if (err!=SUCCESS) {
       ModbusError e(err);
       LOG_E("Error creating request: %02X - %s\n", (int)e, (const char *)e);
