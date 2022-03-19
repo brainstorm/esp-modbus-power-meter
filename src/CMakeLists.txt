@@ -7,7 +7,8 @@ idf_component_register(SRCS ${app_sources})
 
 set(RMAKER_PATH ${CMAKE_CURRENT_LIST_DIR}/../lib)
 
-FILE(GLOB_RECURSE rainmaker_sources $RMAKER_PATH)
+#FILE(GLOB_RECURSE rainmaker_sources ${RMAKER_PATH})
+#idf_component_register(SRCS ${rainmaker_sources})
 
 #if(DEFINED ENV{RMAKER_PATH})
 #  set(RMAKER_PATH $ENV{RMAKER_PATH})
