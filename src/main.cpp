@@ -21,8 +21,8 @@
 #define REDEPIN GPIO_NUM_17
 #define BAUDRATE 9600
 //#define FIRST_REGISTER 0x002A
-#define FIRST_REGISTER 0x001d
-#define NUM_VALUES 2
+#define FIRST_REGISTER 0x023
+#define NUM_VALUES 50
 #define READ_INTERVAL 1000
 
 bool data_ready = false;
@@ -67,7 +67,7 @@ void setup() {
   Serial.println("__ OK __");
 
 // Set up Serial1 connected to Modbus RTU
-  Serial1.begin(BAUDRATE, SERIAL_8E1, RXPIN, TXPIN);
+  Serial1.begin(BAUDRATE, SERIAL_8N1, RXPIN, TXPIN);
 
 // Set up ModbusRTU client.
 // - provide onData handler function
