@@ -5,10 +5,7 @@ set(PROJECT_VER "1.0")
 FILE(GLOB_RECURSE app_sources ${CMAKE_SOURCE_DIR}/src/*.*)
 idf_component_register(SRCS ${app_sources})
 
-set(RMAKER_PATH ${CMAKE_CURRENT_LIST_DIR}/../lib)
-
-#FILE(GLOB_RECURSE rainmaker_sources ${RMAKER_PATH})
-#idf_component_register(SRCS ${rainmaker_sources})
+set(RMAKER_PATH ${CMAKE_SOURCE_DIR}/../lib/esp-rainmaker)
 
 #if(DEFINED ENV{RMAKER_PATH})
 #  set(RMAKER_PATH $ENV{RMAKER_PATH})
