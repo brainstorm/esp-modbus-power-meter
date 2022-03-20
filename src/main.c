@@ -1,16 +1,3 @@
-// Definitions for this special case
-// #define RXPIN GPIO_NUM_8
-// #define TXPIN GPIO_NUM_6
-
-/* Temperature Sensor Example
-
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
-
 #include <string.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -29,6 +16,9 @@
 static const char *TAG = "app_main";
 
 esp_rmaker_device_t *temp_sensor_device;
+
+// #define RXPIN GPIO_NUM_8
+// #define TXPIN GPIO_NUM_6
 
 void app_main()
 {
