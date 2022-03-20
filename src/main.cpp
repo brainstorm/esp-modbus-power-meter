@@ -2,13 +2,11 @@
 // eModbus: Copyright 2020 by Michael Harwerth, Bert Melis and the contributors to ModbusClient
 //               MIT license - see license.md for details
 // =================================================================================================
+// ESP RainMaker.
+#include "RMaker.h"
+#include "WiFi.h"
+#include "WiFiProv.h"
 
-// Example code to show the usage of the eModbus library. 
-// Please refer to root/Readme.md for a full description.
-
-// Note: this is an example for the "EASTRON SDM630 Modbus-V2" power meter!
-
-// Includes: <Arduino.h> for Serial etc.
 #include <Arduino.h>
 
 // Include the header for the ModbusClient RTU style
@@ -20,7 +18,6 @@
 #define TXPIN GPIO_NUM_6
 #define REDEPIN GPIO_NUM_17
 #define BAUDRATE 9600
-//#define FIRST_REGISTER 0x002A
 #define FIRST_REGISTER 0x023
 #define NUM_VALUES 50
 #define READ_INTERVAL 1000
@@ -29,9 +26,6 @@ bool data_ready = false;
 float values[NUM_VALUES];
 uint32_t request_time;
 
-// Create a ModbusRTU client instance
-// The RS485 module has no halfduplex, so the second parameter with the DE/RE pin is required!
-//ModbusClientRTU MB(Serial1, REDEPIN);
 ModbusClientRTU MB(Serial1);
 
 // Define an onData handler function to receive the regular responses
@@ -59,6 +53,29 @@ void handleError(Error error, uint32_t token)
   LOG_E("Error response: %02X - %s\n", (int)me, (const char *)me);
 }
 
+void rainmaker_init_local() {
+      // Create a RainMaker Node
+    Node my_node = RMaker.initNode("ESP RainMaker Node");
+
+    //Add the switch device to the node
+    my_node.addDevice(powermeter);
+  
+    // Add processing callback to the switch (This is what will get called when
+    // the state of the switch is updated using the phone-app or voice-assistants
+    my_switch.addCb(write_callback);
+    
+    // Enable RainMaker features to be supported (we enable Schedules and OTA here)
+    RMaker.enableOTA(OTA_USING_PARAMS);
+    RMaker.enableTZService();
+    RMaker.enableSchedule();
+    RMaker.start();
+
+    // Hand-over the control for Wi-Fi Provisioning. If a Wi-Fi network is not yet configured,
+    // this will start the provisioning process, else it will connect to the Wi-Fi network
+    WiFiProv.beginProvision(WIFI_PROV_SCHEME_BLE, WIFI_PROV_SCHEME_HANDLER_FREE_BTDM, 
+                                              WIFI_PROV_SECURITY_1, pop, service_name);
+}
+
 // Setup() - initialization happens here
 void setup() {
 // Init Serial monitor
@@ -68,6 +85,9 @@ void setup() {
 
 // Set up Serial1 connected to Modbus RTU
   Serial1.begin(BAUDRATE, SERIAL_8N1, RXPIN, TXPIN);
+
+// Set up rainmaker
+  rainmaker_init_local();
 
 // Set up ModbusRTU client.
 // - provide onData handler function
