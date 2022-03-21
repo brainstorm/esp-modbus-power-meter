@@ -46,6 +46,7 @@ static const char *TAG = "app_modbus";
 #define MB_PORT_NUM     UART_NUM_1   // Number of UART port used for Modbus connection
 //#define MB_SLAVE_ADDR   (CONFIG_FMB_CONTROLLER_SLAVE_ID)      // The address of device in Modbus network
 // #define MB_DEV_SPEED    (CONFIG_FMB_UART_BAUD_RATE)  // The communication speed of the UART
+static portMUX_TYPE param_lock = portMUX_INITIALIZER_UNLOCKED;
 
 static void app_modbus_update(TimerHandle_t handle)
 {
@@ -140,7 +141,39 @@ esp_err_t freemodbus_init(void)
                             CONFIG_MB_UART_RXD, CONFIG_MB_UART_RTS,
                             UART_PIN_NO_CHANGE));
 
-    return ESP_FAIL;
+    ESP_LOGI(TAG, "Modbus slave stack initialized.");
+
+    // The cycle below will be terminated when parameter holdingRegParams.dataChan0
+    // incremented each access cycle reaches the CHAN_DATA_MAX_VAL value.
+    for(;holding_reg_params.holding_data0 < MB_CHAN_DATA_MAX_VAL;) {
+        // Check for read/write events of Modbus master for certain events
+        mb_event_group_t event = mbc_slave_check_event(MB_READ_WRITE_MASK);
+        const char* rw_str = (event & MB_READ_MASK) ? "READ" : "WRITE";
+
+        // Filter events and process them accordingly
+        if(event & (MB_EVENT_HOLDING_REG_WR | MB_EVENT_HOLDING_REG_RD)) {
+            // Get parameter information from parameter queue
+            ESP_ERROR_CHECK(mbc_slave_get_param_info(&reg_info, MB_PAR_INFO_GET_TOUT));
+            ESP_LOGI(TAG, "HOLDING %s (%u us), ADDR:%u, TYPE:%u, INST_ADDR:0x%.4x, SIZE:%u",
+                    rw_str,
+                    (uint32_t)reg_info.time_stamp,
+                    (uint32_t)reg_info.mb_offset,
+                    (uint32_t)reg_info.type,
+                    (uint32_t)reg_info.address,
+                    (uint32_t)reg_info.size);
+            if (reg_info.address == (uint8_t*)&holding_reg_params.holding_data0)
+            {
+                portENTER_CRITICAL(&param_lock);
+                holding_reg_params.holding_data0 += MB_CHAN_DATA_OFFSET;
+                if (holding_reg_params.holding_data0 >= (MB_CHAN_DATA_MAX_VAL - MB_CHAN_DATA_OFFSET)) {
+                    coil_reg_params.coils_port1 = 0xFF;
+                }
+                portEXIT_CRITICAL(&param_lock);
+            }
+        }
+    }
+
+    return ESP_OK;
 }
 
 void app_modbus_init()

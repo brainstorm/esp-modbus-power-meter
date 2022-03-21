@@ -11,6 +11,7 @@
 
 #include <app_wifi.h>
 #include <app_insights.h>
+#include <esp_insights.h>
 
 #include "app_priv.h"
 
@@ -52,11 +53,17 @@ void app_main()
     }
 
     /* Create a device and add the relevant parameters to it */
-    power_sensor_device = esp_rmaker_temp_sensor_device_create("Power meter", NULL, 0);
+    power_sensor_device = esp_rmaker_power_meter_sensor_device_create("Power meter", NULL, 0);
     esp_rmaker_node_add_device(node, power_sensor_device);
 
     /* Enable Insights. Requires CONFIG_ESP_INSIGHTS_ENABLED=y */
     app_insights_enable();
+
+    esp_insights_config_t config  = {
+        .log_type = ESP_DIAG_LOG_TYPE_ERROR,
+    };
+
+    esp_insights_init(&config);
 
     /* Start the ESP RainMaker Agent */
     esp_rmaker_start();
