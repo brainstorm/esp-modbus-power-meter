@@ -15,8 +15,6 @@
 /* This is the GPIO on which the power will be set */
 #define OUTPUT_GPIO    19
 
-static TimerHandle_t sensor_timer;
-
 #define DEFAULT_SATURATION  100
 #define DEFAULT_BRIGHTNESS  50
 #define DEFAULT_HUE 50
@@ -29,7 +27,7 @@ static uint16_t g_saturation = DEFAULT_SATURATION;
 static uint16_t g_value = DEFAULT_BRIGHTNESS;
 static float g_temperature;
 
-static void app_rgbled_update(TimerHandle_t handle)
+static void app_rgbled_update()
 {
     ws2812_led_set_hsv(DEFAULT_HUE, g_saturation, g_value);
     esp_rmaker_param_update_and_report(
@@ -44,16 +42,16 @@ esp_err_t rgbled_init(void)
         return err;
     }
 
-    g_temperature = DEFAULT_TEMPERATURE;
-    sensor_timer = xTimerCreate("app_rgbled_update_tm", (REPORTING_PERIOD * 1000) / portTICK_PERIOD_MS,
-                            pdTRUE, NULL, app_rgbled_update);
-    if (sensor_timer) {
-        xTimerStart(sensor_timer, 0);
-        g_hue = (100 - g_temperature) * 2;
-        ws2812_led_set_hsv(g_hue, g_saturation, g_value);
-        return ESP_OK;
-    }
-    return ESP_FAIL;
+    //g_temperature = DEFAULT_TEMPERATURE;
+    //sensor_timer = xTimerCreate("app_rgbled_update_tm", (REPORTING_PERIOD * 1000) / portTICK_PERIOD_MS,
+    //                        pdTRUE, NULL, app_rgbled_update);
+    // (sensor_timer) {
+    // if   xTimerStart(sensor_timer, 0);
+    //    g_hue = (100 - g_temperature) * 2;
+    ws2812_led_set_hsv(g_hue, g_saturation, g_value);
+    return ESP_OK;
+    //}
+    //return ESP_FAIL;
 }
 
 void app_rgbled_init()
@@ -61,4 +59,5 @@ void app_rgbled_init()
     rgbled_init();
     app_reset_button_register(app_reset_button_create(BUTTON_GPIO, BUTTON_ACTIVE_LEVEL),
                 WIFI_RESET_BUTTON_TIMEOUT, FACTORY_RESET_BUTTON_TIMEOUT);
+    app_rgbled_update();
 }

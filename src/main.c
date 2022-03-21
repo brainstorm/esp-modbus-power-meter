@@ -22,8 +22,8 @@ void app_main()
     /* Initialize Application specific hardware drivers and
      * set initial state.
      */
-    app_rgbled_init();
-    app_modbus_init();
+    // app_rgbled_init();
+    // app_modbus_init();
 
     /* Initialize NVS. */
     esp_err_t err = nvs_flash_init();
@@ -43,7 +43,7 @@ void app_main()
     esp_rmaker_config_t rainmaker_cfg = {
         .enable_time_sync = false,
     };
-    esp_rmaker_node_t *node = esp_rmaker_node_init(&rainmaker_cfg, "ESP RainMaker Device", "Temperature Sensor");
+    esp_rmaker_node_t *node = esp_rmaker_node_init(&rainmaker_cfg, "ESP RainMaker Device", "Power meter");
     if (!node) {
         ESP_LOGE(TAG, "Could not initialise node. Aborting!!!");
         vTaskDelay(5000/portTICK_PERIOD_MS);
