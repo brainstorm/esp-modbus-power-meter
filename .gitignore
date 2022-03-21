@@ -5,7 +5,6 @@
 .vscode/settings.json
 .vscode/ipch
 *.old
-sdkconfig
 *.lock
 build
 managed_components
