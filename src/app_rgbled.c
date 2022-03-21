@@ -19,26 +19,19 @@ static TimerHandle_t sensor_timer;
 
 #define DEFAULT_SATURATION  100
 #define DEFAULT_BRIGHTNESS  50
+#define DEFAULT_HUE 50
 
 #define WIFI_RESET_BUTTON_TIMEOUT       3
 #define FACTORY_RESET_BUTTON_TIMEOUT    10
 
-static uint16_t g_hue;
+static uint16_t g_hue = DEFAULT_HUE;
 static uint16_t g_saturation = DEFAULT_SATURATION;
 static uint16_t g_value = DEFAULT_BRIGHTNESS;
 static float g_temperature;
 
 static void app_rgbled_update(TimerHandle_t handle)
 {
-    static float delta = 0.5;
-    g_temperature += delta;
-    if (g_temperature > 99) {
-        delta = -0.5;
-    } else if (g_temperature < 1) {
-        delta = 0.5;
-    }
-    g_hue = (100 - g_temperature) * 2;
-    ws2812_led_set_hsv(g_hue, g_saturation, g_value);
+    ws2812_led_set_hsv(DEFAULT_HUE, g_saturation, g_value);
     esp_rmaker_param_update_and_report(
             esp_rmaker_device_get_param_by_type(power_sensor_device, ESP_RMAKER_PARAM_TEMPERATURE),
             esp_rmaker_float(g_temperature));

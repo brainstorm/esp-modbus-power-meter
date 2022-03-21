@@ -47,6 +47,16 @@ static const char *TAG = "app_modbus";
 //#define MB_SLAVE_ADDR   (CONFIG_FMB_CONTROLLER_SLAVE_ID)      // The address of device in Modbus network
 // #define MB_DEV_SPEED    (CONFIG_FMB_UART_BAUD_RATE)  // The communication speed of the UART
 
+static void app_modbus_update(TimerHandle_t handle)
+{
+    // TODO: Fetch current power
+
+    // esp_rmaker_param_update_and_report(
+    //         esp_rmaker_device_get_param_by_type(power_sensor_device, ESP_RMAKER_PARAM_TEMPERATURE),
+    //         esp_rmaker_float(g_power));
+}
+
+
 esp_err_t freemodbus_init(void)
 {
     // Here are the user defined instances for device parameters packed by 1 byte
