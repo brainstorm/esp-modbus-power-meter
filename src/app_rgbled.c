@@ -1,12 +1,3 @@
-/*  Temperature Sensor demo implementation using RGB LED and timer
-
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
-
 #include <freertos/FreeRTOS.h>
 #include <freertos/timers.h>
 #include <sdkconfig.h>
@@ -18,9 +9,8 @@
 #include <ws2812_led.h>
 #include "app_priv.h"
 
-#define CONFIG_EXAMPLE_BOARD_BUTTON_GPIO 0
 /* This is the button that is used for toggling the power */
-#define BUTTON_GPIO          CONFIG_EXAMPLE_BOARD_BUTTON_GPIO
+#define BUTTON_GPIO          0
 #define BUTTON_ACTIVE_LEVEL  0
 /* This is the GPIO on which the power will be set */
 #define OUTPUT_GPIO    19
@@ -38,7 +28,7 @@ static uint16_t g_saturation = DEFAULT_SATURATION;
 static uint16_t g_value = DEFAULT_BRIGHTNESS;
 static float g_temperature;
 
-static void app_sensor_update(TimerHandle_t handle)
+static void app_rgbled_update(TimerHandle_t handle)
 {
     static float delta = 0.5;
     g_temperature += delta;
@@ -50,16 +40,11 @@ static void app_sensor_update(TimerHandle_t handle)
     g_hue = (100 - g_temperature) * 2;
     ws2812_led_set_hsv(g_hue, g_saturation, g_value);
     esp_rmaker_param_update_and_report(
-            esp_rmaker_device_get_param_by_type(temp_sensor_device, ESP_RMAKER_PARAM_TEMPERATURE),
+            esp_rmaker_device_get_param_by_type(power_sensor_device, ESP_RMAKER_PARAM_TEMPERATURE),
             esp_rmaker_float(g_temperature));
 }
 
-float app_get_current_temperature()
-{
-    return g_temperature;
-}
-
-esp_err_t app_sensor_init(void)
+esp_err_t rgbled_init(void)
 {
     esp_err_t err = ws2812_led_init();
     if (err != ESP_OK) {
@@ -67,8 +52,8 @@ esp_err_t app_sensor_init(void)
     }
 
     g_temperature = DEFAULT_TEMPERATURE;
-    sensor_timer = xTimerCreate("app_sensor_update_tm", (REPORTING_PERIOD * 1000) / portTICK_PERIOD_MS,
-                            pdTRUE, NULL, app_sensor_update);
+    sensor_timer = xTimerCreate("app_rgbled_update_tm", (REPORTING_PERIOD * 1000) / portTICK_PERIOD_MS,
+                            pdTRUE, NULL, app_rgbled_update);
     if (sensor_timer) {
         xTimerStart(sensor_timer, 0);
         g_hue = (100 - g_temperature) * 2;
@@ -78,9 +63,9 @@ esp_err_t app_sensor_init(void)
     return ESP_FAIL;
 }
 
-void app_driver_init()
+void app_rgbled_init()
 {
-    app_sensor_init();
+    rgbled_init();
     app_reset_button_register(app_reset_button_create(BUTTON_GPIO, BUTTON_ACTIVE_LEVEL),
                 WIFI_RESET_BUTTON_TIMEOUT, FACTORY_RESET_BUTTON_TIMEOUT);
 }

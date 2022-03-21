@@ -15,17 +15,15 @@
 
 static const char *TAG = "app_main";
 
-esp_rmaker_device_t *temp_sensor_device;
-
-// #define RXPIN GPIO_NUM_8
-// #define TXPIN GPIO_NUM_6
+esp_rmaker_device_t *power_sensor_device;
 
 void app_main()
 {
     /* Initialize Application specific hardware drivers and
      * set initial state.
      */
-    app_driver_init();
+    app_rgbled_init();
+    app_modbus_init();
 
     /* Initialize NVS. */
     esp_err_t err = nvs_flash_init();
@@ -53,8 +51,8 @@ void app_main()
     }
 
     /* Create a device and add the relevant parameters to it */
-    temp_sensor_device = esp_rmaker_temp_sensor_device_create("Temperature Sensor", NULL, app_get_current_temperature());
-    esp_rmaker_node_add_device(node, temp_sensor_device);
+    power_sensor_device = esp_rmaker_temp_sensor_device_create("Power meter", NULL, 0);
+    esp_rmaker_node_add_device(node, power_sensor_device);
 
     /* Enable Insights. Requires CONFIG_ESP_INSIGHTS_ENABLED=y */
     app_insights_enable();
