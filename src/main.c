@@ -7,6 +7,7 @@
 #include <esp_rmaker_core.h>
 #include <esp_rmaker_standard_params.h>
 #include <esp_rmaker_standard_devices.h>
+#include <esp_rmaker_ota.h>
 
 #include <app_wifi.h>
 #include <app_insights.h>
@@ -22,8 +23,8 @@ void app_main()
     /* Initialize Application specific hardware drivers and
      * set initial state.
      */
-    // app_rgbled_init();
-    // app_modbus_init();
+    app_rgbled_init();
+    app_modbus_init();
 
     /* Initialize NVS. */
     esp_err_t err = nvs_flash_init();
@@ -71,4 +72,10 @@ void app_main()
         vTaskDelay(5000/portTICK_PERIOD_MS);
         abort();
     }
+
+    // Enable RMaker OTA updates: https://rainmaker.espressif.com/docs/ota.html
+    esp_rmaker_ota_config_t ota_config = {
+        .server_cert = ESP_RMAKER_OTA_DEFAULT_SERVER_CERT,
+    };
+    esp_rmaker_ota_enable(&ota_config, OTA_USING_PARAMS);
 }
