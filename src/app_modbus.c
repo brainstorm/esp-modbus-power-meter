@@ -21,7 +21,7 @@
 #include "app_priv.h"
 
 static const char *TAG = "app_modbus";
-holding_reg_params_t holding_reg_params = { 0 };
+holding_reg_params_t holding_reg_params = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 // This macro is only useful for current, deprecated, 4.3.2 PlatformIO esp-idf version.
 // Newer versions switch to MB_RETURN_ON_FALSE macro instead
@@ -31,14 +31,12 @@ holding_reg_params_t holding_reg_params = { 0 };
         return (ret_val); \
     }
 
-// TODO: Move to Kconfig parameters
+// TODO: Move this back to Kconfig parameters
 #define CONFIG_MB_UART_RXD 8
 #define CONFIG_MB_UART_TXD 6
 #define CONFIG_MB_UART_RTS 7
-
 // #define MB_PORT_NUM     (CONFIG_MB_UART_PORT_NUM)   // Number of UART port used for Modbus connection
 // #define MB_DEV_SPEED    (CONFIG_MB_UART_BAUD_RATE)  // The communication speed of the UART
-
 #define MB_PORT_NUM (1)
 #define MB_DEV_SPEED (9600)
 
@@ -75,10 +73,44 @@ enum {
 enum {
     CID_HOLD_DATA_0 = 0,
     CID_HOLD_DATA_1,
+    CID_HOLD_DATA_2,
+    CID_HOLD_DATA_3,
+    CID_HOLD_DATA_4,
+    CID_HOLD_DATA_5,
+    CID_HOLD_DATA_6,
+    CID_HOLD_DATA_7,
+    CID_HOLD_DATA_8,
+    CID_HOLD_DATA_9,
+    CID_HOLD_DATA_10,
+    CID_HOLD_DATA_11,
+    CID_HOLD_DATA_12,
+    CID_HOLD_DATA_13,
+    CID_HOLD_DATA_14,
     CID_COUNT
 };
 
-// Example Data (Object) Dictionary for Modbus parameters:
+  /// Example values extracted from the power meter
+  ///
+  //  0011:    0.193   <--- Amps panel 1
+  //  0013:    0.258   <--- Amps panel 2
+  //  0015:    0.210   <--- Amps panel 3
+  //  0017:  219.600   <--- W total
+  //  0019:   57.200   <--- var total
+
+  //  0039:  105.200   <--- VA total
+  //  0041:  236.550   <--- Volts panel 1
+  //  0043:  236.580   <--- Volts panel 2
+  //  0045:  236.480   <--- Volts panel 3
+
+  //  001B:    0.828   <--- PF
+  //  001D:   49.951   <--- Hz
+
+  //  001F:    0.000   <---  uh
+  //  0021:    0.070   <---  -uh
+  //  0023:    0.000   <---  uAh
+  //  0025:    0.030   <---  -uAh
+
+// Data (Object) Dictionary for Modbus parameters of the power meter:
 // The CID field in the table must be unique.
 // Modbus Slave Addr field defines slave address of the device with correspond parameter.
 // Modbus Reg Type - Type of Modbus register area (Holding register, Input Register and such).
@@ -89,10 +121,37 @@ enum {
 // Access Mode - can be used to implement custom options for processing of characteristic (Read/Write restrictions, factory mode values and etc).
 const mb_parameter_descriptor_t device_parameters[] = {
     // { CID, Param Name, Units, Modbus Slave Addr, Modbus Reg Type, Reg Start, Reg Size, Instance Offset, Data Type, Data Size, Parameter Options, Access Mode}
-    { CID_HOLD_DATA_0, STR("Total_Watts"), STR("%rH"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0, 2,
-            HOLD_OFFSET(holding_data0), PARAM_TYPE_FLOAT, 4, OPTS( 0, 100, 1 ), PAR_PERMS_READ_WRITE_TRIGGER },
-    { CID_HOLD_DATA_1, STR("Total_Amps"), STR("%rH"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 2, 2,
-            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 100, 1 ), PAR_PERMS_READ_WRITE_TRIGGER },
+    { CID_HOLD_DATA_0, STR("Amps_phase_1"), STR("A"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x11, 2,
+            HOLD_OFFSET(holding_data0), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
+    { CID_HOLD_DATA_1, STR("Amps_phase_2"), STR("A"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x13, 2,
+            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
+    { CID_HOLD_DATA_2, STR("Amps_phase_3"), STR("A"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x15, 2,
+            HOLD_OFFSET(holding_data0), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
+    { CID_HOLD_DATA_3, STR("Watts"), STR("W"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x17, 2,
+            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
+    { CID_HOLD_DATA_4, STR("var"), STR("W"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x19, 2,
+            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
+    { CID_HOLD_DATA_5, STR("VA"), STR("VA"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x39, 2,
+            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
+    { CID_HOLD_DATA_6, STR("Volts_phase_1"), STR("V"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x41, 2,
+            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
+    { CID_HOLD_DATA_7, STR("Volts_phase_2"), STR("V"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x43, 2,
+            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
+    { CID_HOLD_DATA_8, STR("Volts_phase_3"), STR("V"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x45, 2,
+            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
+    { CID_HOLD_DATA_9, STR("PF"), STR(""), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x1B, 2,
+            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 1, .001 ), PAR_PERMS_READ },
+    { CID_HOLD_DATA_10, STR("Hz"), STR("Hz"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x1D, 2,
+            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 60, .001 ), PAR_PERMS_READ },
+    { CID_HOLD_DATA_11, STR("uh"), STR("Wh"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x1F, 2,
+            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 10000, .001 ), PAR_PERMS_READ },
+    { CID_HOLD_DATA_12, STR("-uh"), STR("Wh"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x21, 2,
+            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 10000, .001 ), PAR_PERMS_READ },
+    { CID_HOLD_DATA_13, STR("uAh"), STR("Wh"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x23, 2,
+            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 10000, .001 ), PAR_PERMS_READ },
+    { CID_HOLD_DATA_14, STR("-uAh"), STR("Wh"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x25, 2,
+            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 1000, .001 ), PAR_PERMS_READ },
+
 };
 
 // Calculate number of parameters in the table
@@ -128,7 +187,7 @@ static void master_operation_func(void *arg)
     bool alarm_state = false;
     const mb_parameter_descriptor_t* param_descriptor = NULL;
 
-    ESP_LOGI(TAG, "Start modbus test...");
+    ESP_LOGI(TAG, "Reading modbus holding registers from power meter...");
 
     for(uint16_t retry = 0; retry <= MASTER_MAX_RETRY && (!alarm_state); retry++) {
         // Read all found characteristics from slave(s)
@@ -153,6 +212,7 @@ static void master_operation_func(void *arg)
                                             (char*)param_descriptor->param_units,
                                             value,
                                             *(uint32_t*)temp_data_ptr);
+                            // TODO: Send value to RMaker params
                             if (((value > param_descriptor->param_opts.max) ||
                                 (value < param_descriptor->param_opts.min))) {
                                     alarm_state = true;
@@ -169,7 +229,7 @@ static void master_operation_func(void *arg)
                 vTaskDelay(POLL_TIMEOUT_TICS); // timeout between polls
             }
         }
-        vTaskDelay(UPDATE_CIDS_TIMEOUT_TICS); //
+        vTaskDelay(UPDATE_CIDS_TIMEOUT_TICS);
     }
 
     if (alarm_state) {
