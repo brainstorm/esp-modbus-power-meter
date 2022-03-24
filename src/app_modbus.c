@@ -195,36 +195,40 @@ static void master_operation_func(void *arg)
         {
             // Get data from parameters description table
             // and use this information to fill the characteristics description table
-            // and having all required fields in just one table
+            // to have all required fields in just one table
             err = mbc_master_get_cid_info(cid, &param_descriptor);
             if ((err != ESP_ERR_NOT_FOUND) && (param_descriptor != NULL)) {
                 void* temp_data_ptr = master_get_param_data(param_descriptor);
                 assert(temp_data_ptr);
                 uint8_t type = 0;
-                    err = mbc_master_get_parameter(cid, (char*)param_descriptor->param_key,
-                                                        (uint8_t*)&value, &type);
-                    if (err == ESP_OK) {
-                        *(float*)temp_data_ptr = value;
-                        if (param_descriptor->mb_param_type == MB_PARAM_HOLDING) {
-                            ESP_LOGI(TAG, "Characteristic #%d %s (%s) value = %f (0x%x) read successful.",
-                                            param_descriptor->cid,
-                                            (char*)param_descriptor->param_key,
-                                            (char*)param_descriptor->param_units,
-                                            value,
-                                            *(uint32_t*)temp_data_ptr);
-                            // TODO: Send value to RMaker params
-                            if (((value > param_descriptor->param_opts.max) ||
-                                (value < param_descriptor->param_opts.min))) {
-                                    alarm_state = true;
-                                    break;
-                            }
-                    } else {
-                        ESP_LOGE(TAG, "Characteristic #%d (%s) read fail, err = 0x%x (%s).",
-                                            param_descriptor->cid,
-                                            (char*)param_descriptor->param_key,
-                                            (int)err,
-                                            (char*)esp_err_to_name(err));
+
+                err = mbc_master_get_parameter(cid, (char*)param_descriptor->param_key,
+                                                    (uint8_t*)&value, &type);
+                if (err == ESP_OK) {
+                    *(float*)temp_data_ptr = value;
+                    if (param_descriptor->mb_param_type == MB_PARAM_HOLDING) {
+                        ESP_LOGI(TAG, "Characteristic #%d %s (%s) value = %f (0x%x) read successful.",
+                                        param_descriptor->cid,
+                                        (char*)param_descriptor->param_key,
+                                        (char*)param_descriptor->param_units,
+                                        value,
+                                        *(uint32_t*)temp_data_ptr);
+
+                        // TODO: Send values to RMaker params here
+
+                        if (((value > param_descriptor->param_opts.max) ||
+                            (value < param_descriptor->param_opts.min))) {
+                                alarm_state = true;
+                                break;
+                        }
                     }
+
+                } else {
+                    ESP_LOGE(TAG, "Characteristic #%d (%s) read fail, err = 0x%x (%s).",
+                                        param_descriptor->cid,
+                                        (char*)param_descriptor->param_key,
+                                        (int)err,
+                                        (char*)esp_err_to_name(err));
                 }
                 vTaskDelay(POLL_TIMEOUT_TICS); // timeout between polls
             }
@@ -297,5 +301,5 @@ void app_modbus_init(void)
     ESP_ERROR_CHECK(master_init());
     vTaskDelay(10);
 
-    master_operation_func(NULL);
+    master_operation_func(NULL); // TODO: Call this func forever?
 }
