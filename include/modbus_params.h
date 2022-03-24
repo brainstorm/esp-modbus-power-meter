@@ -70,8 +70,5 @@ typedef struct
 #pragma pack(pop)
 
 extern holding_reg_params_t holding_reg_params;
-extern input_reg_params_t input_reg_params;
-extern coil_reg_params_t coil_reg_params;
-extern discrete_reg_params_t discrete_reg_params;
 
 #endif // !defined(_DEVICE_PARAMS)
