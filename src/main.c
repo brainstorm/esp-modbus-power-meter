@@ -27,6 +27,19 @@ void app_main()
     app_rgbled_init();
     app_modbus_init();
 
+    // TODO?
+    // #define WIFI_RESET_BUTTON_TIMEOUT       3
+    // #define FACTORY_RESET_BUTTON_TIMEOUT    10
+    // // This is the button that is used for toggling the power
+    // #define BUTTON_GPIO          0
+    // #define BUTTON_ACTIVE_LEVEL  0
+    // // This is the GPIO on which the power will be set
+    // #define OUTPUT_GPIO    19
+
+
+    // app_reset_button_register(app_reset_button_create(BUTTON_GPIO, BUTTON_ACTIVE_LEVEL),
+    //             WIFI_RESET_BUTTON_TIMEOUT, FACTORY_RESET_BUTTON_TIMEOUT);
+
     /* Initialize NVS. */
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -53,14 +66,25 @@ void app_main()
     }
 
     /* Create a device and add the relevant parameters to it */
-    power_sensor_device = esp_rmaker_power_meter_sensor_device_create("Power meter", NULL, 0);
+    power_sensor_device = esp_rmaker_power_meter_sensor_device_create("Power", NULL, 0);
     esp_rmaker_node_add_device(node, power_sensor_device);
+
+    // TODO: The primary parameter is power, but there are ~14 other (secondary) parameters
+    // defined for this power meter, see CID table on app_modbus.c
+    // esp_rmaker_device_add_param(power_sensor_device, esp_rmaker_power_meter_param_create("Volts", 0));
+    // esp_rmaker_device_add_param(power_sensor_device, esp_rmaker_power_meter_param_create("Volts", 0));
+
 
     /* Enable Insights. Requires CONFIG_ESP_INSIGHTS_ENABLED=y */
     app_insights_enable();
 
+    // TODO: Not sure if the previous init for app_insights includes this?
+    
+    // Question/TODO: Does the MQTT transport include the same insights that the HTTP transport sends?
+    // If so, what's the point of HTTP transport endpoint? The MQTT transport is already provisioned
+    // and does not required hardcoded secret tokens pasted from the dashboard :-S 
     esp_insights_config_t config  = {
-        .log_type = ESP_DIAG_LOG_TYPE_ERROR,
+        .log_type = ESP_DIAG_LOG_TYPE_EVENT,
     };
 
     esp_insights_init(&config);

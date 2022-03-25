@@ -214,7 +214,11 @@ static void master_operation_func(void *arg)
                                         value,
                                         *(uint32_t*)temp_data_ptr);
 
-                        // TODO: Send values to RMaker params here
+                        // Send values to RMaker params
+                        // TODO: Find a way to map individual CID values from the table to ESP_RMAKER_PARAM attrs 
+                        esp_rmaker_param_update_and_report(
+                            esp_rmaker_device_get_param_by_type(power_sensor_device, ESP_RMAKER_PARAM_POWER_METER),
+                            esp_rmaker_float(value));
 
                         if (((value > param_descriptor->param_opts.max) ||
                             (value < param_descriptor->param_opts.min))) {
@@ -222,7 +226,6 @@ static void master_operation_func(void *arg)
                                 break;
                         }
                     }
-
                 } else {
                     ESP_LOGE(TAG, "Characteristic #%d (%s) read fail, err = 0x%x (%s).",
                                         param_descriptor->cid,
@@ -248,7 +251,7 @@ static void master_operation_func(void *arg)
 }
 
 // Modbus master initialization
-static esp_err_t master_init(void)
+static esp_err_t mb_master_init(void)
 {
     // Initialize and start Modbus controller
     mb_communication_info_t comm = {
@@ -298,7 +301,7 @@ static esp_err_t master_init(void)
 void app_modbus_init(void)
 {
     // Initialization of device peripheral and objects
-    ESP_ERROR_CHECK(master_init());
+    ESP_ERROR_CHECK(mb_master_init());
     vTaskDelay(10);
 
     master_operation_func(NULL); // TODO: Call this func forever?
