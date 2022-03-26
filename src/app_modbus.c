@@ -126,31 +126,31 @@ const mb_parameter_descriptor_t device_parameters[] = {
     { CID_HOLD_DATA_1, STR("Amps_phase_2"), STR("A"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x13, 2,
             HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
     { CID_HOLD_DATA_2, STR("Amps_phase_3"), STR("A"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x15, 2,
-            HOLD_OFFSET(holding_data0), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
+            HOLD_OFFSET(holding_data2), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
     { CID_HOLD_DATA_3, STR("Watts"), STR("W"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x17, 2,
-            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
+            HOLD_OFFSET(holding_data3), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
     { CID_HOLD_DATA_4, STR("var"), STR("W"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x19, 2,
-            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
+            HOLD_OFFSET(holding_data4), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
     { CID_HOLD_DATA_5, STR("VA"), STR("VA"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x39, 2,
-            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
+            HOLD_OFFSET(holding_data5), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
     { CID_HOLD_DATA_6, STR("Volts_phase_1"), STR("V"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x41, 2,
-            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
+            HOLD_OFFSET(holding_data6), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
     { CID_HOLD_DATA_7, STR("Volts_phase_2"), STR("V"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x43, 2,
-            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
+            HOLD_OFFSET(holding_data7), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
     { CID_HOLD_DATA_8, STR("Volts_phase_3"), STR("V"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x45, 2,
-            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
+            HOLD_OFFSET(holding_data8), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
     { CID_HOLD_DATA_9, STR("PF"), STR(""), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x1B, 2,
-            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 1, .001 ), PAR_PERMS_READ },
+            HOLD_OFFSET(holding_data9), PARAM_TYPE_FLOAT, 4, OPTS( 0, 1, .001 ), PAR_PERMS_READ },
     { CID_HOLD_DATA_10, STR("Hz"), STR("Hz"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x1D, 2,
-            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 60, .001 ), PAR_PERMS_READ },
+            HOLD_OFFSET(holding_data10), PARAM_TYPE_FLOAT, 4, OPTS( 0, 60, .001 ), PAR_PERMS_READ },
     { CID_HOLD_DATA_11, STR("uh"), STR("Wh"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x1F, 2,
-            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 10000, .001 ), PAR_PERMS_READ },
+            HOLD_OFFSET(holding_data11), PARAM_TYPE_FLOAT, 4, OPTS( 0, 10000, .001 ), PAR_PERMS_READ },
     { CID_HOLD_DATA_12, STR("-uh"), STR("Wh"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x21, 2,
-            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 10000, .001 ), PAR_PERMS_READ },
+            HOLD_OFFSET(holding_data12), PARAM_TYPE_FLOAT, 4, OPTS( 0, 10000, .001 ), PAR_PERMS_READ },
     { CID_HOLD_DATA_13, STR("uAh"), STR("Wh"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x23, 2,
-            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 10000, .001 ), PAR_PERMS_READ },
+            HOLD_OFFSET(holding_data13), PARAM_TYPE_FLOAT, 4, OPTS( 0, 10000, .001 ), PAR_PERMS_READ },
     { CID_HOLD_DATA_14, STR("-uAh"), STR("Wh"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x25, 2,
-            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 1000, .001 ), PAR_PERMS_READ },
+            HOLD_OFFSET(holding_data14), PARAM_TYPE_FLOAT, 4, OPTS( 0, 1000, .001 ), PAR_PERMS_READ },
 
 };
 
@@ -202,8 +202,10 @@ static void read_power_meter(void *arg)
                 assert(temp_data_ptr);
                 uint8_t type = 0;
 
+                vTaskDelay(100/portTICK_PERIOD_MS);
                 err = mbc_master_get_parameter(cid, (char*)param_descriptor->param_key,
                                                     (uint8_t*)&value, &type);
+                vTaskDelay(100/portTICK_PERIOD_MS);
                 if (err == ESP_OK) {
                     *(float*)temp_data_ptr = value;
                     if (param_descriptor->mb_param_type == MB_PARAM_HOLDING) {
@@ -279,9 +281,11 @@ static esp_err_t mb_master_init(void)
                             "mb controller setup fail, returns(0x%x).",
                             (uint32_t)err);
 
+    //uart_set_mode(MB_PORT_NUM, UART_MODE_RS485_HALF_DUPLEX);
+
     // Set UART pin numbers
     err = uart_set_pin(MB_PORT_NUM, CONFIG_MB_UART_TXD, CONFIG_MB_UART_RXD,
-                              CONFIG_MB_UART_RTS, UART_PIN_NO_CHANGE);
+                              UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 
     err = mbc_master_start();
     MASTER_CHECK((err == ESP_OK), ESP_ERR_INVALID_STATE,
