@@ -179,8 +179,8 @@ static void* master_get_param_data(const mb_parameter_descriptor_t* param_descri
     return instance_ptr;
 }
 
-// User operation function to read slave values and check alarm
-static void master_operation_func(void *arg)
+// Read power meter values over modbus, report to rainmaker, alarm if all fails
+static void read_power_meter(void *arg)
 {
     esp_err_t err = ESP_OK;
     float value = 0;
@@ -216,9 +216,15 @@ static void master_operation_func(void *arg)
 
                         // Send values to RMaker params
                         // TODO: Find a way to map individual CID values from the table to ESP_RMAKER_PARAM attrs 
-                        esp_rmaker_param_update_and_report(
-                            esp_rmaker_device_get_param_by_type(power_sensor_device, ESP_RMAKER_PARAM_POWER_METER),
-                            esp_rmaker_float(value));
+                        // esp_rmaker_param_update_and_report(
+                        //     esp_rmaker_device_get_param_by_type(power_sensor_device, ESP_RMAKER_PARAM_POWER_METER),
+                        //     esp_rmaker_float(value));
+
+                        // For now, getting:
+                        /*
+                            E (17347) esp_rmaker_device: Device handle or param type cannot be NULL
+                            E (17357) esp_rmaker_param: Param handle cannot be NULL.
+                        */
 
                         if (((value > param_descriptor->param_opts.max) ||
                             (value < param_descriptor->param_opts.min))) {
@@ -300,9 +306,12 @@ static esp_err_t mb_master_init(void)
 
 void app_modbus_init(void)
 {
-    // Initialization of device peripheral and objects
-    ESP_ERROR_CHECK(mb_master_init());
-    vTaskDelay(10);
+    while(1) {
+        // Initialization of device peripheral and objects
+        ESP_ERROR_CHECK(mb_master_init());
+        //vTaskDelay(10);
 
-    master_operation_func(NULL); // TODO: Call this func forever?
+        read_power_meter(NULL); // TODO: Call this func forever?
+        vTaskDelay(2000/portTICK_PERIOD_MS);
+    }
 }

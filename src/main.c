@@ -74,6 +74,12 @@ void app_main()
     // esp_rmaker_device_add_param(power_sensor_device, esp_rmaker_power_meter_param_create("Volts", 0));
     // esp_rmaker_device_add_param(power_sensor_device, esp_rmaker_power_meter_param_create("Volts", 0));
 
+    /* Enable timezone service which will be require for setting appropriate timezone
+     * from the phone apps for scheduling to work correctly.
+     * For more information on the various ways of setting timezone, please check
+     * https://rainmaker.espressif.com/docs/time-service.html.
+     */
+    esp_rmaker_timezone_service_enable();
 
     /* Enable Insights. Requires CONFIG_ESP_INSIGHTS_ENABLED=y */
     app_insights_enable();
@@ -108,5 +114,6 @@ void app_main()
     esp_rmaker_ota_config_t ota_config = {
         .server_cert = ESP_RMAKER_OTA_DEFAULT_SERVER_CERT,
     };
-    esp_rmaker_ota_enable(&ota_config, OTA_USING_PARAMS);
+    //esp_rmaker_ota_enable(&ota_config, OTA_USING_PARAMS);
+    esp_rmaker_ota_enable(&ota_config, OTA_USING_TOPICS);
 }
