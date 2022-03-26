@@ -21,7 +21,8 @@
 #include "app_priv.h"
 
 static const char *TAG = "app_modbus";
-holding_reg_params_t holding_reg_params = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+//holding_reg_params_t holding_reg_params = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+holding_reg_params_t holding_reg_params = { 0 };
 
 // This macro is only useful for current, deprecated, 4.3.2 PlatformIO esp-idf version.
 // Newer versions switch to MB_RETURN_ON_FALSE macro instead
@@ -66,26 +67,26 @@ holding_reg_params_t holding_reg_params = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 
 // Enumeration of modbus device addresses accessed by master device
 enum {
-    MB_DEVICE_ADDR1 = 1 // Only one slave device used for the test (add other slave addresses here)
+    MB_DEVICE_ADDR1 = 1, // Only one slave device used for the test (add other slave addresses here)
 };
 
 // Enumeration of all supported CIDs for device (used in parameter definition table)
 enum {
     CID_HOLD_DATA_0 = 0,
-    CID_HOLD_DATA_1,
-    CID_HOLD_DATA_2,
-    CID_HOLD_DATA_3,
-    CID_HOLD_DATA_4,
-    CID_HOLD_DATA_5,
-    CID_HOLD_DATA_6,
-    CID_HOLD_DATA_7,
-    CID_HOLD_DATA_8,
-    CID_HOLD_DATA_9,
-    CID_HOLD_DATA_10,
-    CID_HOLD_DATA_11,
-    CID_HOLD_DATA_12,
-    CID_HOLD_DATA_13,
-    CID_HOLD_DATA_14,
+    // CID_HOLD_DATA_1,
+    // CID_HOLD_DATA_2,
+    // CID_HOLD_DATA_3,
+    // CID_HOLD_DATA_4,
+    // CID_HOLD_DATA_5,
+    // CID_HOLD_DATA_6,
+    // CID_HOLD_DATA_7,
+    // CID_HOLD_DATA_8,
+    // CID_HOLD_DATA_9,
+    // CID_HOLD_DATA_10,
+    // CID_HOLD_DATA_11,
+    // CID_HOLD_DATA_12,
+    // CID_HOLD_DATA_13,
+    // CID_HOLD_DATA_14,
     CID_COUNT
 };
 
@@ -121,36 +122,36 @@ enum {
 // Access Mode - can be used to implement custom options for processing of characteristic (Read/Write restrictions, factory mode values and etc).
 const mb_parameter_descriptor_t device_parameters[] = {
     // { CID, Param Name, Units, Modbus Slave Addr, Modbus Reg Type, Reg Start, Reg Size, Instance Offset, Data Type, Data Size, Parameter Options, Access Mode}
-    { CID_HOLD_DATA_0, STR("Amps_phase_1"), STR("A"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x11, 2,
-            HOLD_OFFSET(holding_data0), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
-    { CID_HOLD_DATA_1, STR("Amps_phase_2"), STR("A"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x13, 2,
-            HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
-    { CID_HOLD_DATA_2, STR("Amps_phase_3"), STR("A"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x15, 2,
-            HOLD_OFFSET(holding_data2), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
-    { CID_HOLD_DATA_3, STR("Watts"), STR("W"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x17, 2,
-            HOLD_OFFSET(holding_data3), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
-    { CID_HOLD_DATA_4, STR("var"), STR("W"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x19, 2,
-            HOLD_OFFSET(holding_data4), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
-    { CID_HOLD_DATA_5, STR("VA"), STR("VA"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x39, 2,
-            HOLD_OFFSET(holding_data5), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
-    { CID_HOLD_DATA_6, STR("Volts_phase_1"), STR("V"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x41, 2,
-            HOLD_OFFSET(holding_data6), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
-    { CID_HOLD_DATA_7, STR("Volts_phase_2"), STR("V"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x43, 2,
-            HOLD_OFFSET(holding_data7), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
-    { CID_HOLD_DATA_8, STR("Volts_phase_3"), STR("V"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x45, 2,
-            HOLD_OFFSET(holding_data8), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
-    { CID_HOLD_DATA_9, STR("PF"), STR(""), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x1B, 2,
-            HOLD_OFFSET(holding_data9), PARAM_TYPE_FLOAT, 4, OPTS( 0, 1, .001 ), PAR_PERMS_READ },
-    { CID_HOLD_DATA_10, STR("Hz"), STR("Hz"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x1D, 2,
-            HOLD_OFFSET(holding_data10), PARAM_TYPE_FLOAT, 4, OPTS( 0, 60, .001 ), PAR_PERMS_READ },
-    { CID_HOLD_DATA_11, STR("uh"), STR("Wh"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x1F, 2,
-            HOLD_OFFSET(holding_data11), PARAM_TYPE_FLOAT, 4, OPTS( 0, 10000, .001 ), PAR_PERMS_READ },
-    { CID_HOLD_DATA_12, STR("-uh"), STR("Wh"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x21, 2,
-            HOLD_OFFSET(holding_data12), PARAM_TYPE_FLOAT, 4, OPTS( 0, 10000, .001 ), PAR_PERMS_READ },
-    { CID_HOLD_DATA_13, STR("uAh"), STR("Wh"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x23, 2,
-            HOLD_OFFSET(holding_data13), PARAM_TYPE_FLOAT, 4, OPTS( 0, 10000, .001 ), PAR_PERMS_READ },
-    { CID_HOLD_DATA_14, STR("-uAh"), STR("Wh"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x25, 2,
-            HOLD_OFFSET(holding_data14), PARAM_TYPE_FLOAT, 4, OPTS( 0, 1000, .001 ), PAR_PERMS_READ },
+    // { CID_HOLD_DATA_0, STR("Amps_phase_1"), STR("A"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x11, 2,
+    //         HOLD_OFFSET(holding_data0), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
+    // { CID_HOLD_DATA_1, STR("Amps_phase_2"), STR("A"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x13, 2,
+    //         HOLD_OFFSET(holding_data1), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
+    // { CID_HOLD_DATA_2, STR("Amps_phase_3"), STR("A"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x15, 2,
+    //         HOLD_OFFSET(holding_data2), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
+    { CID_HOLD_DATA_0, STR("Watts"), STR("W"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x17, 2,
+            HOLD_OFFSET(holding_data0), PARAM_TYPE_FLOAT, 2, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
+    // { CID_HOLD_DATA_4, STR("var"), STR("W"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x19, 2,
+    //         HOLD_OFFSET(holding_data4), PARAM_TYPE_FLOAT, 4, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
+    // { CID_HOLD_DATA_5, STR("VA"), STR("VA"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x39, 2,
+    //         HOLD_OFFSET(holding_data5), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
+    // { CID_HOLD_DATA_6, STR("Volts_phase_1"), STR("V"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x41, 2,
+    //         HOLD_OFFSET(holding_data6), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
+    // { CID_HOLD_DATA_7, STR("Volts_phase_2"), STR("V"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x43, 2,
+    //         HOLD_OFFSET(holding_data7), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
+    // { CID_HOLD_DATA_8, STR("Volts_phase_3"), STR("V"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x45, 2,
+    //         HOLD_OFFSET(holding_data8), PARAM_TYPE_FLOAT, 4, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
+    // { CID_HOLD_DATA_9, STR("PF"), STR(""), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x1B, 2,
+    //         HOLD_OFFSET(holding_data9), PARAM_TYPE_FLOAT, 4, OPTS( 0, 1, .001 ), PAR_PERMS_READ },
+    // { CID_HOLD_DATA_10, STR("Hz"), STR("Hz"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x1D, 2,
+    //         HOLD_OFFSET(holding_data10), PARAM_TYPE_FLOAT, 4, OPTS( 0, 60, .001 ), PAR_PERMS_READ },
+    // { CID_HOLD_DATA_11, STR("uh"), STR("Wh?"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x1F, 2,
+    //         HOLD_OFFSET(holding_data11), PARAM_TYPE_FLOAT, 4, OPTS( 0, 10000, .001 ), PAR_PERMS_READ },
+    // { CID_HOLD_DATA_12, STR("-uh"), STR("Wh?"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x21, 2,
+    //         HOLD_OFFSET(holding_data12), PARAM_TYPE_FLOAT, 4, OPTS( 0, 10000, .001 ), PAR_PERMS_READ },
+    // { CID_HOLD_DATA_13, STR("uAh"), STR("Ah"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x23, 2,
+    //         HOLD_OFFSET(holding_data13), PARAM_TYPE_FLOAT, 4, OPTS( 0, 10000, .001 ), PAR_PERMS_READ },
+    // { CID_HOLD_DATA_14, STR("-uAh"), STR("Ah"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x25, 2,
+    //         HOLD_OFFSET(holding_data14), PARAM_TYPE_FLOAT, 4, OPTS( 0, 1000, .001 ), PAR_PERMS_READ },
 
 };
 
@@ -200,10 +201,9 @@ static void read_power_meter(void *arg)
             assert(temp_data_ptr);
             uint8_t type = 0;
 
-            vTaskDelay(100/portTICK_PERIOD_MS);
             err = mbc_master_get_parameter(cid, (char*)param_descriptor->param_key,
                                                 (uint8_t*)&value, &type);
-            vTaskDelay(100/portTICK_PERIOD_MS);
+            vTaskDelay(1000/portTICK_PERIOD_MS);
             if (err == ESP_OK) {
                 *(float*)temp_data_ptr = value;
                 if (param_descriptor->mb_param_type == MB_PARAM_HOLDING) {
@@ -233,7 +233,7 @@ static void read_power_meter(void *arg)
                                     (int)err,
                                     (char*)esp_err_to_name(err));
             }
-            //vTaskDelay(POLL_TIMEOUT_TICS); // timeout between polls
+            vTaskDelay(POLL_TIMEOUT_TICS); // timeout between polls
         }
     }
 
@@ -294,7 +294,6 @@ void app_modbus_init(void)
     while(1) {
         // Initialization of device peripheral and objects
         ESP_ERROR_CHECK(mb_master_init());
-        //vTaskDelay(10);
 
         read_power_meter(NULL); // TODO: Call this func forever?
         vTaskDelay(2000/portTICK_PERIOD_MS);
