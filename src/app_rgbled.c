@@ -4,7 +4,6 @@
 
 #include <app_reset.h>
 #include <ws2812_led.h>
-// #include "app_priv.h"
 
 #define DEFAULT_SATURATION  100
 #define DEFAULT_BRIGHTNESS  50

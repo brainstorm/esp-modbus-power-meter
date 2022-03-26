@@ -179,81 +179,64 @@ static void* master_get_param_data(const mb_parameter_descriptor_t* param_descri
     return instance_ptr;
 }
 
-// Read power meter values over modbus, report to rainmaker, alarm if all fails
+// Read power meter values over modbus, report to rainmaker
 static void read_power_meter(void *arg)
 {
     esp_err_t err = ESP_OK;
     float value = 0;
-    bool alarm_state = false;
     const mb_parameter_descriptor_t* param_descriptor = NULL;
 
     ESP_LOGI(TAG, "Reading modbus holding registers from power meter...");
 
-    for(uint16_t retry = 0; retry <= MASTER_MAX_RETRY && (!alarm_state); retry++) {
-        // Read all found characteristics from slave(s)
-        for (uint16_t cid = 0; (err != ESP_ERR_NOT_FOUND) && cid < MASTER_MAX_CIDS; cid++)
-        {
-            // Get data from parameters description table
-            // and use this information to fill the characteristics description table
-            // to have all required fields in just one table
-            err = mbc_master_get_cid_info(cid, &param_descriptor);
-            if ((err != ESP_ERR_NOT_FOUND) && (param_descriptor != NULL)) {
-                void* temp_data_ptr = master_get_param_data(param_descriptor);
-                assert(temp_data_ptr);
-                uint8_t type = 0;
+    // Read all found characteristics from slave(s)
+    for (uint16_t cid = 0; (err != ESP_ERR_NOT_FOUND) && cid < MASTER_MAX_CIDS; cid++)
+    {
+        // Get data from parameters description table
+        // and use this information to fill the characteristics description table
+        // to have all required fields in just one table
+        err = mbc_master_get_cid_info(cid, &param_descriptor);
+        if ((err != ESP_ERR_NOT_FOUND) && (param_descriptor != NULL)) {
+            void* temp_data_ptr = master_get_param_data(param_descriptor);
+            assert(temp_data_ptr);
+            uint8_t type = 0;
 
-                vTaskDelay(100/portTICK_PERIOD_MS);
-                err = mbc_master_get_parameter(cid, (char*)param_descriptor->param_key,
-                                                    (uint8_t*)&value, &type);
-                vTaskDelay(100/portTICK_PERIOD_MS);
-                if (err == ESP_OK) {
-                    *(float*)temp_data_ptr = value;
-                    if (param_descriptor->mb_param_type == MB_PARAM_HOLDING) {
-                        ESP_LOGI(TAG, "Characteristic #%d %s (%s) value = %f (0x%x) read successful.",
-                                        param_descriptor->cid,
-                                        (char*)param_descriptor->param_key,
-                                        (char*)param_descriptor->param_units,
-                                        value,
-                                        *(uint32_t*)temp_data_ptr);
+            vTaskDelay(100/portTICK_PERIOD_MS);
+            err = mbc_master_get_parameter(cid, (char*)param_descriptor->param_key,
+                                                (uint8_t*)&value, &type);
+            vTaskDelay(100/portTICK_PERIOD_MS);
+            if (err == ESP_OK) {
+                *(float*)temp_data_ptr = value;
+                if (param_descriptor->mb_param_type == MB_PARAM_HOLDING) {
+                    ESP_LOGI(TAG, "Characteristic #%d %s (%s) value = %f (0x%x) read successful.",
+                                    param_descriptor->cid,
+                                    (char*)param_descriptor->param_key,
+                                    (char*)param_descriptor->param_units,
+                                    value,
+                                    *(uint32_t*)temp_data_ptr);
 
-                        // Send values to RMaker params
-                        // TODO: Find a way to map individual CID values from the table to ESP_RMAKER_PARAM attrs 
-                        // esp_rmaker_param_update_and_report(
-                        //     esp_rmaker_device_get_param_by_type(power_sensor_device, ESP_RMAKER_PARAM_POWER_METER),
-                        //     esp_rmaker_float(value));
+                    // Send values to RMaker params
+                    // TODO: Find a way to map individual CID values from the table to ESP_RMAKER_PARAM attrs 
+                    // esp_rmaker_param_update_and_report(
+                    //     esp_rmaker_device_get_param_by_type(power_sensor_device, ESP_RMAKER_PARAM_POWER_METER),
+                    //     esp_rmaker_float(value));
 
-                        // For now, getting:
-                        /*
-                            E (17347) esp_rmaker_device: Device handle or param type cannot be NULL
-                            E (17357) esp_rmaker_param: Param handle cannot be NULL.
-                        */
-
-                        if (((value > param_descriptor->param_opts.max) ||
-                            (value < param_descriptor->param_opts.min))) {
-                                alarm_state = true;
-                                break;
-                        }
-                    }
-                } else {
-                    ESP_LOGE(TAG, "Characteristic #%d (%s) read fail, err = 0x%x (%s).",
-                                        param_descriptor->cid,
-                                        (char*)param_descriptor->param_key,
-                                        (int)err,
-                                        (char*)esp_err_to_name(err));
+                    // For now, getting:
+                    /*
+                        E (17347) esp_rmaker_device: Device handle or param type cannot be NULL
+                        E (17357) esp_rmaker_param: Param handle cannot be NULL.
+                    */
                 }
-                vTaskDelay(POLL_TIMEOUT_TICS); // timeout between polls
+            } else {
+                ESP_LOGE(TAG, "Characteristic #%d (%s) read fail, err = 0x%x (%s).",
+                                    param_descriptor->cid,
+                                    (char*)param_descriptor->param_key,
+                                    (int)err,
+                                    (char*)esp_err_to_name(err));
             }
+            //vTaskDelay(POLL_TIMEOUT_TICS); // timeout between polls
         }
-        vTaskDelay(UPDATE_CIDS_TIMEOUT_TICS);
     }
 
-    if (alarm_state) {
-        ESP_LOGI(TAG, "Alarm triggered by cid #%d.",
-                                        param_descriptor->cid);
-    } else {
-        ESP_LOGE(TAG, "Alarm is not triggered after %d retries.",
-                                        MASTER_MAX_RETRY);
-    }
     ESP_LOGI(TAG, "Destroy master...");
     ESP_ERROR_CHECK(mbc_master_destroy());
 }
@@ -280,8 +263,6 @@ static esp_err_t mb_master_init(void)
     MASTER_CHECK((err == ESP_OK), ESP_ERR_INVALID_STATE,
                             "mb controller setup fail, returns(0x%x).",
                             (uint32_t)err);
-
-    //uart_set_mode(MB_PORT_NUM, UART_MODE_RS485_HALF_DUPLEX);
 
     // Set UART pin numbers
     err = uart_set_pin(MB_PORT_NUM, CONFIG_MB_UART_TXD, CONFIG_MB_UART_RXD,
