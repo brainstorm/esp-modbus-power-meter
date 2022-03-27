@@ -203,7 +203,7 @@ static void read_power_meter(void *arg)
 
             err = mbc_master_get_parameter(cid, (char*)param_descriptor->param_key,
                                                 (uint8_t*)&value, &type);
-            vTaskDelay(1000/portTICK_PERIOD_MS);
+            //vTaskDelay(1000/portTICK_PERIOD_MS);
             if (err == ESP_OK) {
                 *(float*)temp_data_ptr = value;
                 if (param_descriptor->mb_param_type == MB_PARAM_HOLDING) {
@@ -211,7 +211,7 @@ static void read_power_meter(void *arg)
                                     param_descriptor->cid,
                                     (char*)param_descriptor->param_key,
                                     (char*)param_descriptor->param_units,
-                                    value,
+                                    (double)value,
                                     *(uint32_t*)temp_data_ptr);
 
                     // Send values to RMaker params
