@@ -24,8 +24,8 @@ void app_main()
     /* Initialize Application specific hardware drivers and
      * set initial state.
      */
-    app_rgbled_init();
-    app_modbus_init();
+    //app_rgbled_init();
+    xTaskCreate(app_modbus_init, "modbus_task", 1024, NULL, 5, NULL);
 
     // TODO?
     // #define WIFI_RESET_BUTTON_TIMEOUT       3
@@ -83,12 +83,9 @@ void app_main()
 
     /* Enable Insights. Requires CONFIG_ESP_INSIGHTS_ENABLED=y */
     app_insights_enable();
-
-    // TODO: Not sure if the previous init for app_insights includes this?
     
-    // Question/TODO: Does the MQTT transport include the same insights that the HTTP transport sends?
-    // If so, what's the point of HTTP transport endpoint? The MQTT transport is already provisioned
-    // and does not required hardcoded secret tokens pasted from the dashboard :-S 
+    // ESP insights is different than *app_insights*. The former is the espressif cloud thing, the latter
+    // are the IC's firmware application logs.
     esp_insights_config_t config  = {
         .log_type = ESP_DIAG_LOG_TYPE_EVENT,
     };
