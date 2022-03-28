@@ -44,9 +44,6 @@ holding_reg_params_t holding_reg_params = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 // Note: Some pins on target chip cannot be assigned for UART communication.
 // See UART documentation for selected board and target to configure pins using Kconfig.
 
-// The number of parameters that intended to be used in the particular control process
-#define MASTER_MAX_CIDS num_device_parameters
-
 // Number of reading of parameters from slave
 #define MASTER_MAX_RETRY 30
 
@@ -142,9 +139,9 @@ const mb_parameter_descriptor_t device_parameters[] = {
             HOLD_OFFSET(holding_data7), PARAM_TYPE_FLOAT, PARAM_SIZE_FLOAT, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
     { CID_HOLD_DATA_8, STR("Volts_phase_3"), STR("V"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x44, 2,
             HOLD_OFFSET(holding_data8), PARAM_TYPE_FLOAT, PARAM_SIZE_FLOAT, OPTS( 0, 400, .001 ), PAR_PERMS_READ },
-    { CID_HOLD_DATA_9, STR("PF"), STR(""), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x1A, 2,
+    { CID_HOLD_DATA_9, STR("Power_Factor"), STR(""), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x1A, 2,
             HOLD_OFFSET(holding_data9), PARAM_TYPE_FLOAT, PARAM_SIZE_FLOAT, OPTS( 0, 1, .001 ), PAR_PERMS_READ },
-    { CID_HOLD_DATA_10, STR("Hz"), STR("Hz"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x1C, 2,
+    { CID_HOLD_DATA_10, STR("Frequency"), STR("Hz"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x1C, 2,
             HOLD_OFFSET(holding_data10), PARAM_TYPE_FLOAT, PARAM_SIZE_FLOAT, OPTS( 0, 60, .001 ), PAR_PERMS_READ },
     { CID_HOLD_DATA_11, STR("uh"), STR("Wh?"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x1E, 2,
             HOLD_OFFSET(holding_data11), PARAM_TYPE_FLOAT, PARAM_SIZE_FLOAT, OPTS( 0, 10000, .001 ), PAR_PERMS_READ },
@@ -159,7 +156,12 @@ const mb_parameter_descriptor_t device_parameters[] = {
 // Calculate number of parameters in the table
 const uint16_t num_device_parameters = (sizeof(device_parameters)/sizeof(device_parameters[0]));
 
-// The function to get pointer to parameter storage (instance) according to parameter description table
+// // Get parameter description table
+// mb_parameter_descriptor_t* get_modbus_parameter_descriptor_table() {
+//         return device_parameters;
+// }
+
+// Get pointer to parameter storage (instance) according to parameter description table
 static void* master_get_param_data(const mb_parameter_descriptor_t* param_descriptor)
 {
     assert(param_descriptor != NULL);
@@ -185,7 +187,7 @@ static void* master_get_param_data(const mb_parameter_descriptor_t* param_descri
 static void read_power_meter(void *arg)
 {
     esp_err_t err = ESP_OK;
-    float value = 0;
+    float current_value = 0;
     const mb_parameter_descriptor_t* param_descriptor = NULL;
 
     ESP_LOGI(TAG, "Reading modbus holding registers from power meter...");
@@ -203,20 +205,20 @@ static void read_power_meter(void *arg)
             uint8_t type = 0;
 
             err = mbc_master_get_parameter(cid, (char*)param_descriptor->param_key,
-                                                (uint8_t*)&value, &type);
+                                                (uint8_t*)&current_value, &type);
             vTaskDelay(100/portTICK_PERIOD_MS);
             if (err == ESP_OK) {
-                *(float*)temp_data_ptr = value;
+                *(float*)temp_data_ptr = current_value;
                 if (param_descriptor->mb_param_type == MB_PARAM_HOLDING) {
                     ESP_LOGI(TAG, "Characteristic #%d %s (%s) value = %lf (0x%x) read successful.",
                                     param_descriptor->cid,
                                     (char*)param_descriptor->param_key,
                                     (char*)param_descriptor->param_units,
-                                    value,
+                                    current_value,
                                     *(uint32_t*)temp_data_ptr);
 
                     // Send parameters collected from ModBus to RMaker cloud as parameters
-                    send_to_rmaker_cloud(cid, value, power_sensor_device);
+                    send_to_rmaker_cloud(device_parameters, current_value, power_sensor_device);
                     
                     // Send instantaneous wattage to PVoutput.org
                     //if(cid == 3) send_to_pvoutput_org(cid, value);
@@ -281,6 +283,7 @@ static esp_err_t mb_master_init()
     MASTER_CHECK((err == ESP_OK), ESP_ERR_INVALID_STATE,
                                 "mb controller set descriptor fail, returns(0x%x).",
                                 (uint32_t)err);
+    
     ESP_LOGI(TAG, "Modbus master stack initialized...");
     return err;
 }

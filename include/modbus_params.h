@@ -13,6 +13,9 @@
 #ifndef _DEVICE_PARAMS
 #define _DEVICE_PARAMS
 
+// The number of parameters that intended to be used in the particular control process
+#define MASTER_MAX_CIDS num_device_parameters
+
 // This file defines structure of modbus parameters which reflect correspond modbus address space
 // for each hodling registers register type
 #pragma pack(push, 1)
@@ -38,5 +41,6 @@ typedef struct
 #pragma pack(pop)
 
 extern holding_reg_params_t holding_reg_params;
+// const mb_parameter_descriptor_t *get_modbus_parameter_descriptor_table();
 
 #endif // !defined(_DEVICE_PARAMS)
