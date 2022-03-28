@@ -25,7 +25,8 @@ void app_main(void)
      * set initial state.
      */
     //app_rgbled_init();
-    xTaskCreate(app_modbus_init, "modbus_task", 512, NULL, 5, NULL);
+    xTaskCreate(app_modbus_init, "modbus_task", 16384, NULL, 5, NULL);
+    //app_modbus_init();
 
     // TODO?
     // #define WIFI_RESET_BUTTON_TIMEOUT       3
@@ -71,8 +72,15 @@ void app_main(void)
 
     // TODO: The primary parameter is power, but there are ~14 other (secondary) parameters
     // defined for this power meter, see CID table on app_modbus.c
+    esp_rmaker_device_add_param(power_sensor_device, esp_rmaker_power_meter_param_create("Watts", 0));
     // esp_rmaker_device_add_param(power_sensor_device, esp_rmaker_power_meter_param_create("Volts", 0));
-    // esp_rmaker_device_add_param(power_sensor_device, esp_rmaker_power_meter_param_create("Volts", 0));
+
+    // Enable RMaker OTA updates: https://rainmaker.espressif.com/docs/ota.html
+    esp_rmaker_ota_config_t ota_config = {
+        .server_cert = ESP_RMAKER_OTA_DEFAULT_SERVER_CERT,
+    };
+    //esp_rmaker_ota_enable(&ota_config, OTA_USING_PARAMS);
+    esp_rmaker_ota_enable(&ota_config, OTA_USING_TOPICS);
 
     /* Enable timezone service which will be require for setting appropriate timezone
      * from the phone apps for scheduling to work correctly.
@@ -106,11 +114,4 @@ void app_main(void)
         vTaskDelay(5000/portTICK_PERIOD_MS);
         abort();
     }
-
-    // Enable RMaker OTA updates: https://rainmaker.espressif.com/docs/ota.html
-    esp_rmaker_ota_config_t ota_config = {
-        .server_cert = ESP_RMAKER_OTA_DEFAULT_SERVER_CERT,
-    };
-    //esp_rmaker_ota_enable(&ota_config, OTA_USING_PARAMS);
-    esp_rmaker_ota_enable(&ota_config, OTA_USING_TOPICS);
 }

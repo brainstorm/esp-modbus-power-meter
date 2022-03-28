@@ -7,4 +7,4 @@ phy_init, data, phy,     ,          0x1000,
 ota_0,    app,  ota_0,   0x20000,   1600K,
 ota_1,    app,  ota_1,   ,          1600K,
 fctry,    data, nvs,     0x340000,  0x6000
-coredump, data, coredump,,          64K
+#coredump, data, coredump,,          64K
