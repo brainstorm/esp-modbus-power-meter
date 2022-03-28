@@ -19,6 +19,7 @@
 #include <esp_rmaker_standard_params.h> 
 
 #include "app_priv.h"
+#include "app_rmaker.h"
 
 static const char *TAG = "app_modbus";
 holding_reg_params_t holding_reg_params = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -214,26 +215,11 @@ static void read_power_meter(void *arg)
                                     value,
                                     *(uint32_t*)temp_data_ptr);
 
-                    // Send values to RMaker params
-                    // TODO: Find a way to map individual CID values from the table to ESP_RMAKER_PARAM attrs 
-                    // If it's the instantaneous power attribute, report it to rainmaker
-                    if (cid == 3) {
-                        assert(power_sensor_device != NULL);
-                        esp_rmaker_param_update_and_report(
-                            // esp_rmaker_device_get_param_by_type();
-                            esp_rmaker_device_get_param_by_name(power_sensor_device, "Watts"),
-                            esp_rmaker_int((int)value));
-                        esp_rmaker_param_update_and_report(
-                            // esp_rmaker_device_get_param_by_type();
-                            esp_rmaker_device_get_param_by_name(power_sensor_device, "Power Meter"),
-                            esp_rmaker_int((int)value));
-
-                    }
-                    // For now, getting:
-                    /*
-                        E (17347) esp_rmaker_device: Device handle or param type cannot be NULL
-                        E (17357) esp_rmaker_param: Param handle cannot be NULL.
-                    */
+                    // Send parameters collected from ModBus to RMaker cloud as parameters
+                    send_to_rmaker_cloud(cid, value, power_sensor_device);
+                    
+                    // Send instantaneous wattage to PVoutput.org
+                    //if(cid == 3) send_to_pvoutput_org(cid, value);
                 }
             } else {
                 ESP_LOGE(TAG, "Characteristic #%d (%s) read fail, err = 0x%x (%s).",
@@ -251,7 +237,7 @@ static void read_power_meter(void *arg)
 }
 
 // Modbus master initialization
-static esp_err_t mb_master_init(void)
+static esp_err_t mb_master_init()
 {
     // Initialize and start Modbus controller
     mb_communication_info_t comm = {
@@ -299,7 +285,7 @@ static esp_err_t mb_master_init(void)
     return err;
 }
 
-void app_modbus_init(void)
+void app_modbus_init()
 {
     while(1) {
         vTaskDelay(10000/portTICK_PERIOD_MS);

@@ -10,10 +10,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define DEFAULT_TEMPERATURE 25.0
 #define REPORTING_PERIOD    60 /* Seconds */
-
-extern esp_rmaker_device_t *power_sensor_device;
 
 void app_rgbled_init();
 void app_modbus_init();
