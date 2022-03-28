@@ -15,7 +15,7 @@ void app_main(void)
      * set initial state.
      */
     //app_rgbled_init();
-    //xTaskCreate(app_modbus_init, "modbus_task", 16384, NULL, 5, NULL);
+    xTaskCreate(app_modbus_init, "modbus_task", 16384, NULL, 5, NULL);
     //app_modbus_init();
 
     /* Initialize NVS. */

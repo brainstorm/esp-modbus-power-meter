@@ -17,6 +17,5 @@
 extern esp_rmaker_device_t *power_sensor_device;
 
 void app_rmaker_init();
-// void create_rmaker_secondary_parameters(esp_rmaker_device_t *device, const mb_parameter_descriptor_t *device_params);
 void create_rmaker_secondary_parameters(esp_rmaker_device_t *device);
-void send_to_rmaker_cloud(const mb_parameter_descriptor_t *device_parameters, float value, const esp_rmaker_device_t *device);
+void send_to_rmaker_cloud(uint16_t cid, float value, const esp_rmaker_device_t *device);

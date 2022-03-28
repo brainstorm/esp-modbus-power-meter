@@ -73,14 +73,7 @@ void app_rmaker_init() {
 
 /* The primary parameter is Power (as in Watts), but there are ~14 other (secondary) parameters
    defined for this power meter, see CID table on app_modbus.c */
-//void create_rmaker_secondary_parameters(esp_rmaker_device_t *device, const mb_parameter_descriptor_t *params){
 void create_rmaker_secondary_parameters(esp_rmaker_device_t *device){
-    // Iterate through the device's CID (parameters) table and assign the descriptive strings to the RainMaker device.
-    // esp_err_t err = ESP_OK;
-
-    // for (uint16_t cid = 0; (err != ESP_ERR_NOT_FOUND) && cid < MASTER_MAX_CIDS; cid++) { 
-    // }
-
     esp_rmaker_device_add_param(device, esp_rmaker_power_meter_param_create("Amps_phase_1", 0));
     esp_rmaker_device_add_param(device, esp_rmaker_power_meter_param_create("Amps_phase_2", 0));
     esp_rmaker_device_add_param(device, esp_rmaker_power_meter_param_create("Amps_phase_3", 0));
@@ -100,8 +93,8 @@ void create_rmaker_secondary_parameters(esp_rmaker_device_t *device){
 }
 
 /* Sends parameters collected on the ModBus table towards rainmaker cloud */
-void send_to_rmaker_cloud(const mb_parameter_descriptor_t *device_parameters, float value, const esp_rmaker_device_t *device) {
-    switch (device_parameters->cid)
+void send_to_rmaker_cloud(uint16_t cid, float value, const esp_rmaker_device_t *device) {
+    switch (cid)
     {
         case 0: {
             esp_rmaker_param_update_and_report(

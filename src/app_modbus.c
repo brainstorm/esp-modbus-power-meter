@@ -206,7 +206,6 @@ static void read_power_meter(void *arg)
 
             err = mbc_master_get_parameter(cid, (char*)param_descriptor->param_key,
                                                 (uint8_t*)&current_value, &type);
-            vTaskDelay(100/portTICK_PERIOD_MS);
             if (err == ESP_OK) {
                 *(float*)temp_data_ptr = current_value;
                 if (param_descriptor->mb_param_type == MB_PARAM_HOLDING) {
@@ -218,7 +217,9 @@ static void read_power_meter(void *arg)
                                     *(uint32_t*)temp_data_ptr);
 
                     // Send parameters collected from ModBus to RMaker cloud as parameters
-                    send_to_rmaker_cloud(device_parameters, current_value, power_sensor_device);
+                    // few seconds to avoid rate limiting?
+                    vTaskDelay(5000/portTICK_PERIOD_MS);
+                    send_to_rmaker_cloud(cid, current_value, power_sensor_device);
                     
                     // Send instantaneous wattage to PVoutput.org
                     //if(cid == 3) send_to_pvoutput_org(cid, value);
