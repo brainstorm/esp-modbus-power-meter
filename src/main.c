@@ -19,13 +19,13 @@ static const char *TAG = "app_main";
 
 esp_rmaker_device_t *power_sensor_device;
 
-void app_main()
+void app_main(void)
 {
     /* Initialize Application specific hardware drivers and
      * set initial state.
      */
     //app_rgbled_init();
-    xTaskCreate(app_modbus_init, "modbus_task", 1024, NULL, 5, NULL);
+    xTaskCreate(app_modbus_init, "modbus_task", 512, NULL, 5, NULL);
 
     // TODO?
     // #define WIFI_RESET_BUTTON_TIMEOUT       3

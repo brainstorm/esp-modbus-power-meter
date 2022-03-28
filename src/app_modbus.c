@@ -186,7 +186,9 @@ static void read_power_meter(void *arg)
     esp_err_t err = ESP_OK;
     float value = 0;
     const mb_parameter_descriptor_t* param_descriptor = NULL;
-    //esp_rmaker_device_t* pmeter_dev = NULL;
+
+    esp_rmaker_device_t* pmeter_dev = NULL;
+    esp_rmaker_param_t* pparam = NULL;
 
     ESP_LOGI(TAG, "Reading modbus holding registers from power meter...");
 
@@ -218,13 +220,16 @@ static void read_power_meter(void *arg)
                     // Send values to RMaker params
                     // TODO: Find a way to map individual CID values from the table to ESP_RMAKER_PARAM attrs 
                     // If it's the instantaneous power attribute, report it to rainmaker
-                    // if (cid == 3) {
-                    //     pmeter_dev = esp_rmaker_device_get_param_by_type(power_sensor_device, ESP_RMAKER_PARAM_POWER_METER);
-                    //     assert(pmeter_dev != NULL);
-                    //     esp_rmaker_param_update_and_report(
-                    //         pmeter_dev,
-                    //         esp_rmaker_float(value));
-                    // }
+                    if (cid == 3) {
+                        pmeter_dev = esp_rmaker_node_get_device_by_name(esp_rmaker_get_node(), "Power");
+                        pparam = esp_rmaker_device_get_param_by_type(pmeter_dev, ESP_RMAKER_PARAM_POWER_METER);
+                        assert(pmeter_dev != NULL);
+                        assert(pparam != NULL);
+
+                        esp_rmaker_param_update_and_report(
+                            pparam,
+                            esp_rmaker_float(value));
+                    }
                     // For now, getting:
                     /*
                         E (17347) esp_rmaker_device: Device handle or param type cannot be NULL
