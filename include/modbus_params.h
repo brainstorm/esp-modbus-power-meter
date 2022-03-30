@@ -41,6 +41,5 @@ typedef struct
 #pragma pack(pop)
 
 extern holding_reg_params_t holding_reg_params;
-// const mb_parameter_descriptor_t *get_modbus_parameter_descriptor_table();
 
 #endif // !defined(_DEVICE_PARAMS)

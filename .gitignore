@@ -8,3 +8,4 @@
 *.lock
 build
 managed_components
+app_pvoutput_org.c

@@ -18,11 +18,16 @@
 #include <esp_rmaker_standard_types.h> 
 #include <esp_rmaker_standard_params.h> 
 
-#include "app_priv.h"
+#include "app_modbus.h"
 #include "app_rmaker.h"
+#include "app_pvoutput_org.h"
 
 static const char *TAG = "app_modbus";
+
+static TimerHandle_t modbus_timer;
 holding_reg_params_t holding_reg_params = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+#define MB_REPORTING_PERIOD    60 /* Seconds */
 
 // This macro is only useful for current, deprecated, 4.3.2 PlatformIO esp-idf version.
 // Newer versions switch to MB_RETURN_ON_FALSE macro instead
@@ -218,8 +223,16 @@ static void read_power_meter(void *arg)
 
                     // Send parameters collected from ModBus to RMaker cloud as parameters
                     // few seconds to avoid rate limiting?
-                    vTaskDelay(5000/portTICK_PERIOD_MS);
+                    vTaskDelay(1000/portTICK_PERIOD_MS);
                     send_to_rmaker_cloud(cid, current_value, power_sensor_device);
+
+                    // Horrible hack: Both rmaker cloud and pvoutput are time-coupled now,
+                    // I need to use queues and do some proper refactoring, running out of time now though :-S
+                    if (cid == 3) { // Power (Watts)
+                        pvoutput_update(current_value);
+                    } else if (cid == 6) { // Volts phase 1
+                        pvoutput_update(current_value);
+                    }
                     
                     // Send instantaneous wattage to PVoutput.org
                     //if(cid == 3) send_to_pvoutput_org(cid, value);
@@ -289,13 +302,16 @@ static esp_err_t mb_master_init()
     return err;
 }
 
-void app_modbus_init()
+esp_err_t app_modbus_init()
 {
-    while(1) {
-        vTaskDelay(10000/portTICK_PERIOD_MS);
-        // Initialization of device peripheral and objects
-        ESP_ERROR_CHECK(mb_master_init());
+    mb_master_init();
 
-        read_power_meter(NULL); // TODO: Call this func forever?
+    modbus_timer = xTimerCreate("app_modbus_update",
+                                (MB_REPORTING_PERIOD * 1000) / portTICK_PERIOD_MS,
+                                pdTRUE, NULL, read_power_meter);
+    if (modbus_timer) {
+        xTimerStart(modbus_timer, 0);
+        return ESP_OK;
     }
+    return ESP_FAIL;
 }
