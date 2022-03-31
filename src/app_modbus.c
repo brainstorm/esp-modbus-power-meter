@@ -30,7 +30,7 @@ holding_reg_params_t holding_reg_params = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 float g_current_volts = -0.1;
 float g_current_watts = -0.1;
 
-#define MB_REPORTING_PERIOD    60*1000*5 /* Report every 5 minutes, to avoid rate limiting, especially on pvoutput.org */
+#define MB_REPORTING_PERIOD    60*1000*5/portTICK_PERIOD_MS /* Report every 5 minutes, to avoid rate limiting, especially on pvoutput.org */
 
 // Newer ESP-IDF versions (>4.4) switch to MB_RETURN_ON_FALSE macro instead
 #define MASTER_CHECK(a, ret_val, str, ...) \
