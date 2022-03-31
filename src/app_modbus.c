@@ -24,13 +24,15 @@
 
 static const char *TAG = "app_modbus";
 
-static TimerHandle_t modbus_timer;
+//static TimerHandle_t modbus_timer;
 holding_reg_params_t holding_reg_params = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-#define MB_REPORTING_PERIOD    60 /* Seconds */
+float g_current_volts = -0.1;
+float g_current_watts = -0.1;
 
-// This macro is only useful for current, deprecated, 4.3.2 PlatformIO esp-idf version.
-// Newer versions switch to MB_RETURN_ON_FALSE macro instead
+#define MB_REPORTING_PERIOD    60*1000*5 /* Report every 5 minutes, to avoid rate limiting, especially on pvoutput.org */
+
+// Newer ESP-IDF versions (>4.4) switch to MB_RETURN_ON_FALSE macro instead
 #define MASTER_CHECK(a, ret_val, str, ...) \
     if (!(a)) { \
         ESP_LOGE(TAG, "%s(%u): " str, __FUNCTION__, __LINE__, ##__VA_ARGS__); \
@@ -189,67 +191,68 @@ static void* master_get_param_data(const mb_parameter_descriptor_t* param_descri
 }
 
 // Read power meter values over modbus, report to rainmaker
-static void read_power_meter(void *arg)
+static void read_power_meter()
 {
     esp_err_t err = ESP_OK;
     float current_value = 0;
     const mb_parameter_descriptor_t* param_descriptor = NULL;
 
-    ESP_LOGI(TAG, "Reading modbus holding registers from power meter...");
+    while(1) {
+        ESP_LOGI(TAG, "Reading modbus holding registers from power meter...");
 
-    // Read all found characteristics from slave(s)
-    for (uint16_t cid = 0; (err != ESP_ERR_NOT_FOUND) && cid < MASTER_MAX_CIDS; cid++)
-    {
-        // Get data from parameters description table
-        // and use this information to fill the characteristics description table
-        // to have all required fields in just one table
-        err = mbc_master_get_cid_info(cid, &param_descriptor);
-        if ((err != ESP_ERR_NOT_FOUND) && (param_descriptor != NULL)) {
-            void* temp_data_ptr = master_get_param_data(param_descriptor);
-            assert(temp_data_ptr);
-            uint8_t type = 0;
+        // Read all found characteristics from slave(s)
+        for (uint16_t cid = 0; (err != ESP_ERR_NOT_FOUND) && cid < MASTER_MAX_CIDS; cid++)
+        {
+            // Get data from parameters description table
+            // and use this information to fill the characteristics description table
+            // to have all required fields in just one table
+            err = mbc_master_get_cid_info(cid, &param_descriptor);
+            if ((err != ESP_ERR_NOT_FOUND) && (param_descriptor != NULL)) {
+                void* temp_data_ptr = master_get_param_data(param_descriptor);
+                assert(temp_data_ptr);
+                uint8_t type = 0;
 
-            err = mbc_master_get_parameter(cid, (char*)param_descriptor->param_key,
-                                                (uint8_t*)&current_value, &type);
-            if (err == ESP_OK) {
-                *(float*)temp_data_ptr = current_value;
-                if (param_descriptor->mb_param_type == MB_PARAM_HOLDING) {
-                    ESP_LOGI(TAG, "Characteristic #%d %s (%s) value = %lf (0x%x) read successful.",
-                                    param_descriptor->cid,
-                                    (char*)param_descriptor->param_key,
-                                    (char*)param_descriptor->param_units,
-                                    current_value,
-                                    *(uint32_t*)temp_data_ptr);
+                err = mbc_master_get_parameter(cid, (char*)param_descriptor->param_key,
+                                                    (uint8_t*)&current_value, &type);
+                if (err == ESP_OK) {
+                    *(float*)temp_data_ptr = current_value;
+                    if (param_descriptor->mb_param_type == MB_PARAM_HOLDING) {
+                        ESP_LOGI(TAG, "Characteristic #%d %s (%s) value = %lf (0x%x) read successful.",
+                                        param_descriptor->cid,
+                                        (char*)param_descriptor->param_key,
+                                        (char*)param_descriptor->param_units,
+                                        current_value,
+                                        *(uint32_t*)temp_data_ptr);
 
-                    // Send parameters collected from ModBus to RMaker cloud as parameters
-                    // few seconds to avoid rate limiting?
-                    vTaskDelay(1000/portTICK_PERIOD_MS);
-                    send_to_rmaker_cloud(cid, current_value, power_sensor_device);
+                        // Send parameters collected from ModBus to RMaker cloud as parameters
+                        // few seconds to avoid rate limiting?
+                        vTaskDelay(1000/portTICK_PERIOD_MS);
+                        send_to_rmaker_cloud(cid, current_value, power_sensor_device);
 
-                    // Horrible hack: Both rmaker cloud and pvoutput are time-coupled now,
-                    // I need to use queues and do some proper refactoring, running out of time now though :-S
-                    if (cid == 3) { // Power (Watts)
-                        pvoutput_update(current_value);
-                    } else if (cid == 6) { // Volts phase 1
-                        pvoutput_update(current_value);
+                        // Horrible hack: Both rmaker cloud and pvoutput are time-coupled now,
+                        // I need to use queues and do some proper refactoring, running out of time now though :-S
+                        if (cid == 3) { // Power (Watts)
+                            g_current_watts = current_value;
+                            pvoutput_update(current_value);
+                        } else if (cid == 6) { // Volts phase 1
+                            g_current_volts = current_value;
+                            pvoutput_update(current_value);
+                        }                    
                     }
-                    
-                    // Send instantaneous wattage to PVoutput.org
-                    //if(cid == 3) send_to_pvoutput_org(cid, value);
+                } else {
+                    ESP_LOGE(TAG, "Characteristic #%d (%s) read fail, err = 0x%x (%s).",
+                                        param_descriptor->cid,
+                                        (char*)param_descriptor->param_key,
+                                        (int)err,
+                                        (char*)esp_err_to_name(err));
                 }
-            } else {
-                ESP_LOGE(TAG, "Characteristic #%d (%s) read fail, err = 0x%x (%s).",
-                                    param_descriptor->cid,
-                                    (char*)param_descriptor->param_key,
-                                    (int)err,
-                                    (char*)esp_err_to_name(err));
+                vTaskDelay(POLL_TIMEOUT_TICS); // timeout between polls
             }
-            vTaskDelay(POLL_TIMEOUT_TICS); // timeout between polls
         }
+        vTaskDelay(MB_REPORTING_PERIOD);
     }
-
-    ESP_LOGI(TAG, "Destroy master...");
-    ESP_ERROR_CHECK(mbc_master_destroy());
+    // ESP_LOGI(TAG, "Destroy master...");
+    // ESP_ERROR_CHECK(mbc_master_destroy());
 }
 
 // Modbus master initialization
@@ -306,12 +309,40 @@ esp_err_t app_modbus_init()
 {
     mb_master_init();
 
-    modbus_timer = xTimerCreate("app_modbus_update",
-                                (MB_REPORTING_PERIOD * 1000) / portTICK_PERIOD_MS,
-                                pdTRUE, NULL, read_power_meter);
-    if (modbus_timer) {
-        xTimerStart(modbus_timer, 0);
-        return ESP_OK;
-    }
+    xTaskCreate(read_power_meter, "modbus_task", 16384, NULL, 5, NULL);
+
+    // Failed attempt at software timers below
+    // TODO: This software timer generates a stack overflow:
+    /*
+    I (343702) app_modbus: Reading modbus holding registers from power meter...
+D (343702) MB_PORT_COMMON: xMBMasterRunResTake:Take resource (80) (21 ticks).
+
+***ERROR*** A stack overflow in task Tmr Svc has been detected.
+
+
+Backtrace:0x400244da:0x3ffd59f00x4002b1fd:0x3ffd5a10 0x4002e503:0x3ffd5a30 0x4002cf75:0x3ffd5ab0 0x4002b2fc:0x3ffd5ad0 0x4002b2ae:0x3ffd5b00 0x4008b5a9:0xffffffff  |<-CORRUPTED
+  #0  0x400244da:0x3ffd59f00x4002b1fd:0x3ffd5a10 in panic_abort at /Users/rvalls/.platformio/packages/framework-espidf/components/esp_system/panic.c:402
+  #1  0x4002e503:0x3ffd5a30 in vApplicationStackOverflowHook at /Users/rvalls/.platformio/packages/framework-espidf/components/freertos/port/xtensa/port.c:394
+  #2  0x4002cf75:0x3ffd5ab0 in vTaskSwitchContext at /Users/rvalls/.platformio/packages/framework-espidf/components/freertos/tasks.c:3505
+  #3  0x4002b2fc:0x3ffd5ad0 in _frxt_dispatch at /Users/rvalls/.platformio/packages/framework-espidf/components/freertos/port/xtensa/portasm.S:436
+  #4  0x4002b2ae:0x3ffd5b00 in _frxt_int_exit at /Users/rvalls/.platformio/packages/framework-espidf/components/freertos/port/xtensa/portasm.S:231
+  #5  0x4008b5a9:0xffffffff in __wrap_esp_log_write at /Users/rvalls/esp/esp-rainmaker/components/esp-insights/components/esp_diagnostics/src/esp_diagnostics_log_hook.c:438
+
+
+
+
+ELF file SHA256: 0b8285e68eb113a5
+
+Rebooting...
+    */
+    // modbus_timer = xTimerCreate("app_modbus_update",
+    //                             (MB_REPORTING_PERIOD * 1000) / portTICK_PERIOD_MS,
+    //                             pdTRUE, NULL, read_power_meter);
+    // if (modbus_timer) {
+    //     xTimerStart(modbus_timer, 0);
+    //     return ESP_OK;
+    // }
+
+    // The task should never end, if it does, that's a fail :-!
     return ESP_FAIL;
 }
