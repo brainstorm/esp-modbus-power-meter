@@ -35,7 +35,6 @@ void app_rmaker_init() {
     esp_rmaker_node_add_device(node, power_sensor_device);
 
     // Add the rest of the power meter info: Amps, Volts, Frequency, Power Factor, etc...
-    //create_rmaker_secondary_parameters(power_sensor_device, get_modbus_parameter_descriptor_table());
     create_rmaker_secondary_parameters(power_sensor_device);
 
     // Enable RMaker OTA updates: https://rainmaker.espressif.com/docs/ota.html
@@ -72,25 +71,22 @@ void app_rmaker_init() {
     }
 }
 
-/* The primary parameter is Power (as in Watts), but there are ~14 other (secondary) parameters
-   defined for this power meter, see CID table on app_modbus.c */
-void create_rmaker_secondary_parameters(){
-    esp_param_property_flags_t params_flags = PROP_FLAG_READ | PROP_FLAG_WRITE | PROP_FLAG_TIME_SERIES | PROP_FLAG_PERSIST;
-    esp_rmaker_param_create("Amps_phase_1", "A", esp_rmaker_float(0.0), params_flags);
-    esp_rmaker_param_create("Amps_phase_2", "A", esp_rmaker_float(0.0), params_flags);
-    esp_rmaker_param_create("Amps_phase_3", "A", esp_rmaker_float(0.0), params_flags);
-    esp_rmaker_param_create("Volts_phase_1", "V", esp_rmaker_float(0.0), params_flags);
-    esp_rmaker_param_create("Volts_phase_2", "V", esp_rmaker_float(0.0), params_flags);
-    esp_rmaker_param_create("Volts_phase_3", "V", esp_rmaker_float(0.0), params_flags);
-    esp_rmaker_param_create("Power_Factor", NULL, esp_rmaker_float(0.0), params_flags); // Ratio, unit-less
-    esp_rmaker_param_create("Frequency", "Hz", esp_rmaker_float(0.0), params_flags);
-    // Less understood/verified values
-    esp_rmaker_param_create("var", "W", esp_rmaker_float(0.0), params_flags);
-    esp_rmaker_param_create("VA", "W", esp_rmaker_float(0.0), params_flags);
-    esp_rmaker_param_create("uh", "Wh?", esp_rmaker_float(0.0), params_flags);
-    esp_rmaker_param_create("-uh", "Wh?", esp_rmaker_float(0.0), params_flags);
-    esp_rmaker_param_create("uAh", "Ah", esp_rmaker_float(0.0), params_flags);
-    esp_rmaker_param_create("-uAh", "Ah", esp_rmaker_float(0.0), params_flags);
+void create_rmaker_secondary_parameters(esp_rmaker_device_t *device){
+    esp_rmaker_device_add_param(device, esp_rmaker_power_meter_param_create("Amps_phase_1", 0.0));
+    esp_rmaker_device_add_param(device, esp_rmaker_power_meter_param_create("Amps_phase_2", 0.0));
+    esp_rmaker_device_add_param(device, esp_rmaker_power_meter_param_create("Amps_phase_3", 0.0));
+    esp_rmaker_device_add_param(device, esp_rmaker_power_meter_param_create("Volts_phase_1", 0.0));
+    esp_rmaker_device_add_param(device, esp_rmaker_power_meter_param_create("Volts_phase_2", 0.0));
+    esp_rmaker_device_add_param(device, esp_rmaker_power_meter_param_create("Volts_phase_3", 0.0));
+    esp_rmaker_device_add_param(device, esp_rmaker_power_meter_param_create("Power_Factor", 0.0));
+    esp_rmaker_device_add_param(device, esp_rmaker_power_meter_param_create("Frequency", 0.0));
+    // Less understood nor verified values
+    esp_rmaker_device_add_param(device, esp_rmaker_power_meter_param_create("var", 0.0));
+    esp_rmaker_device_add_param(device, esp_rmaker_power_meter_param_create("VA", 0.0));
+    esp_rmaker_device_add_param(device, esp_rmaker_power_meter_param_create("uh", 0.0));
+    esp_rmaker_device_add_param(device, esp_rmaker_power_meter_param_create("-uh", 0.0));
+    esp_rmaker_device_add_param(device, esp_rmaker_power_meter_param_create("uAh", 0.0));
+    esp_rmaker_device_add_param(device, esp_rmaker_power_meter_param_create("-uAh", 0.0));
 }
 
 /* Sends parameters collected on the ModBus table towards rainmaker cloud */
