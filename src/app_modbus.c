@@ -24,7 +24,6 @@
 
 static const char *TAG = "app_modbus";
 
-//static TimerHandle_t modbus_timer;
 holding_reg_params_t holding_reg_params = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 float g_current_volts = -0.1;
@@ -282,13 +281,14 @@ static esp_err_t mb_master_init()
     err = uart_set_pin(MB_PORT_NUM, CONFIG_MB_UART_TXD, CONFIG_MB_UART_RXD,
                               UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 
+    MASTER_CHECK((err == ESP_OK), ESP_ERR_INVALID_STATE,
+            "mb serial set pin failure, uart_set_pin() returned (0x%x).", (uint32_t)err);
+
     err = mbc_master_start();
     MASTER_CHECK((err == ESP_OK), ESP_ERR_INVALID_STATE,
                             "mb controller start fail, returns(0x%x).",
                             (uint32_t)err);
-
-    MASTER_CHECK((err == ESP_OK), ESP_ERR_INVALID_STATE,
-            "mb serial set pin failure, uart_set_pin() returned (0x%x).", (uint32_t)err);
+    
     // Set driver mode to Half Duplex
     err = uart_set_mode(MB_PORT_NUM, UART_MODE_RS485_HALF_DUPLEX);
     //err = uart_set_mode(MB_PORT_NUM, UART_MODE_UART);
@@ -311,38 +311,6 @@ esp_err_t app_modbus_init()
 
     xTaskCreate(read_power_meter, "modbus_task", 16384, NULL, 5, NULL);
 
-    // Failed attempt at software timers below
-    // TODO: This software timer generates a stack overflow:
-    /*
-    I (343702) app_modbus: Reading modbus holding registers from power meter...
-D (343702) MB_PORT_COMMON: xMBMasterRunResTake:Take resource (80) (21 ticks).
-
-***ERROR*** A stack overflow in task Tmr Svc has been detected.
-
-
-Backtrace:0x400244da:0x3ffd59f00x4002b1fd:0x3ffd5a10 0x4002e503:0x3ffd5a30 0x4002cf75:0x3ffd5ab0 0x4002b2fc:0x3ffd5ad0 0x4002b2ae:0x3ffd5b00 0x4008b5a9:0xffffffff  |<-CORRUPTED
-  #0  0x400244da:0x3ffd59f00x4002b1fd:0x3ffd5a10 in panic_abort at /Users/rvalls/.platformio/packages/framework-espidf/components/esp_system/panic.c:402
-  #1  0x4002e503:0x3ffd5a30 in vApplicationStackOverflowHook at /Users/rvalls/.platformio/packages/framework-espidf/components/freertos/port/xtensa/port.c:394
-  #2  0x4002cf75:0x3ffd5ab0 in vTaskSwitchContext at /Users/rvalls/.platformio/packages/framework-espidf/components/freertos/tasks.c:3505
-  #3  0x4002b2fc:0x3ffd5ad0 in _frxt_dispatch at /Users/rvalls/.platformio/packages/framework-espidf/components/freertos/port/xtensa/portasm.S:436
-  #4  0x4002b2ae:0x3ffd5b00 in _frxt_int_exit at /Users/rvalls/.platformio/packages/framework-espidf/components/freertos/port/xtensa/portasm.S:231
-  #5  0x4008b5a9:0xffffffff in __wrap_esp_log_write at /Users/rvalls/esp/esp-rainmaker/components/esp-insights/components/esp_diagnostics/src/esp_diagnostics_log_hook.c:438
-
-
-
-
-ELF file SHA256: 0b8285e68eb113a5
-
-Rebooting...
-    */
-    // modbus_timer = xTimerCreate("app_modbus_update",
-    //                             (MB_REPORTING_PERIOD * 1000) / portTICK_PERIOD_MS,
-    //                             pdTRUE, NULL, read_power_meter);
-    // if (modbus_timer) {
-    //     xTimerStart(modbus_timer, 0);
-    //     return ESP_OK;
-    // }
-
-    // The task should never end, if it does, that's a fail :-!
+    // The task above should never end, if it does, that's a fail :-!
     return ESP_FAIL;
 }
