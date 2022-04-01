@@ -49,6 +49,7 @@ There are a few vague, vestigial references online about this power meter:
 1. There's a [youtube][youtube_usage] video showing the default setup password and some basic usage/configuration.
 2. A possible company spinoff, [from yiGedianqi to yiHedianqi][possible_company_spinoff]?
 3. Several [Amazon customers rating this meter][amazon_power_meter_ratings] and pointing out that it only comes with a chinese manual (true story).
+4. [A similar project, including Grafana, RPi and other power meters supported.][guillermo_electrico]
 
 
 [youtube_usage]: https://www.youtube.com/watch?v=22_Wp99j8_U
@@ -61,3 +62,4 @@ There are a few vague, vestigial references online about this power meter:
 [ttl_level_converter]: https://hackaday.com/2016/12/05/taking-it-to-another-level-making-3-3v-and-5v-logic-communicate-with-level-shifters/
 [redepin]: https://github.com/eModbus/eModbus/blob/2c740aa0960328fb0851ab0ff771236b14ed7838/examples/RTU04example/main.cpp#L21
 [auto_rede]: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/uart.html#circuit-c-auto-switching-transmitter-receiver
+[guillermo_electrico]: https://github.com/GuillermoElectrico/energy-meter-logger
