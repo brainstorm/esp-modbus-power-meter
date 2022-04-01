@@ -26,7 +26,7 @@ Here's a picture at some of the hardware specs from the power meter:
 
 ![power_meter_specs](./img/yigedianqi_power_meter_specs.png)
 
-## Code structure
+## 🖥️ Code structure
 
 The protocol used on top of RS485 is Modbus-RTU with 8N1 parity and with this code is acting as a `master` and the power meter as `master`.
 
@@ -38,17 +38,17 @@ The protocol used on top of RS485 is Modbus-RTU with 8N1 parity and with this co
 
 ## ✋ How can you contribute?
 
-1. Review your power meter's manual.
-2. Find the register(s) listing.
-3. Submit a pullrequest with CID characteristics.
+1. Review your own power meter's manual and find the register(s) listing.
+3. Come up with a way to share this codebase with other third party (custom) ModBus power meter definitions and submit a pullrequest with [CID characteristics like mine here](https://github.com/brainstorm/yigedianqi-modbus/blob/f6a4d453bac206fb2ed3160085f9e9adee2a0960/src/app_modbus.c#L120-L161).
+4. Code review, audit and clean my messy code, specially the use of global variables and **substitute it with proper FreeRTOS queues, semaphores and mutexes instead**.
 
 ## 🌀 Random notes
 
 There are a few vague, vestigial references online about this power meter:
 
 1. There's a [youtube][youtube_usage] video showing the default setup password and some basic usage/configuration.
-2. A possible company spinoff, [from yigedianqi to yiHedianqi][possible_company_spinoff]?
-3. Several [Amazon customers rating this meter][amazon_power_meter_ratings] and pointing out that it only comes with a chinese manual (true).
+2. A possible company spinoff, [from yiGedianqi to yiHedianqi][possible_company_spinoff]?
+3. Several [Amazon customers rating this meter][amazon_power_meter_ratings] and pointing out that it only comes with a chinese manual (true story).
 
 
 [youtube_usage]: https://www.youtube.com/watch?v=22_Wp99j8_U
