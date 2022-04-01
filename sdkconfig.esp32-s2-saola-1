@@ -140,6 +140,17 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
+# Modbus Power Meter configuration
+#
+CONFIG_MB_UART_PORT_NUM=1
+CONFIG_MB_UART_BAUD_RATE=9600
+CONFIG_MB_UART_RXD=8
+CONFIG_MB_UART_TXD=9
+CONFIG_MB_UART_RTS=10
+CONFIG_MB_COMM_MODE_RTU=y
+# end of Modbus Power Meter configuration
+
+#
 # ESP RainMaker Config
 #
 # CONFIG_ESP_RMAKER_NO_CLAIM is not set

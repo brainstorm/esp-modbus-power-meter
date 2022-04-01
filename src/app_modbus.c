@@ -38,17 +38,10 @@ float g_current_watts = -0.1;
         return (ret_val); \
     }
 
-// TODO: Move this back to Kconfig parameters
-#define CONFIG_MB_UART_RXD 8
-#define CONFIG_MB_UART_TXD 6
-#define CONFIG_MB_UART_RTS 7
-// #define MB_PORT_NUM     (CONFIG_MB_UART_PORT_NUM)   // Number of UART port used for Modbus connection
-// #define MB_DEV_SPEED    (CONFIG_MB_UART_BAUD_RATE)  // The communication speed of the UART
-#define MB_PORT_NUM (1)
-#define MB_DEV_SPEED (9600)
-
-// Note: Some pins on target chip cannot be assigned for UART communication.
-// See UART documentation for selected board and target to configure pins using Kconfig.
+#define MB_UART_RXD         (CONFIG_MB_UART_RXD)
+#define MB_UART_TXD         (CONFIG_MB_UART_TXD)
+#define MB_PORT_NUM         (CONFIG_MB_UART_PORT_NUM)
+#define MB_UART_SPEED       (CONFIG_MB_UART_BAUD_RATE)
 
 // Number of reading of parameters from slave
 #define MASTER_MAX_RETRY 30
@@ -162,11 +155,6 @@ const mb_parameter_descriptor_t device_parameters[] = {
 // Calculate number of parameters in the table
 const uint16_t num_device_parameters = (sizeof(device_parameters)/sizeof(device_parameters[0]));
 
-// // Get parameter description table
-// mb_parameter_descriptor_t* get_modbus_parameter_descriptor_table() {
-//         return device_parameters;
-// }
-
 // Get pointer to parameter storage (instance) according to parameter description table
 static void* master_get_param_data(const mb_parameter_descriptor_t* param_descriptor)
 {
@@ -261,7 +249,7 @@ static esp_err_t mb_master_init()
     mb_communication_info_t comm = {
             .port = MB_PORT_NUM,
             .mode = MB_MODE_RTU,
-            .baudrate = MB_DEV_SPEED,
+            .baudrate = MB_UART_SPEED,
             .parity = MB_PARITY_NONE
     };
     void* master_handler = NULL;
@@ -278,7 +266,7 @@ static esp_err_t mb_master_init()
                             (uint32_t)err);
 
     // Set UART pin numbers
-    err = uart_set_pin(MB_PORT_NUM, CONFIG_MB_UART_TXD, CONFIG_MB_UART_RXD,
+    err = uart_set_pin(MB_PORT_NUM, MB_UART_TXD, MB_UART_RXD,
                               UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 
     MASTER_CHECK((err == ESP_OK), ESP_ERR_INVALID_STATE,
