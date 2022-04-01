@@ -1,0 +1,4 @@
+[submodule "lib/esp-rainmaker"]
+	path = lib/esp-rainmaker
+	url = https://github.com/brainstorm/esp-rainmaker.git
+	branch = power_metering
