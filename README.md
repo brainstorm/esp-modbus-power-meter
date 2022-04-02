@@ -3,6 +3,10 @@
 This repo details how to use a [Saola-1 ESP32S2 board](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/hw-reference/esp32s2/user-guide-saola-1-v1.2.html) coupled with [a RS485 transceiver from
 LinkSprite](http://shieldlist.org/linksprite/rs485) and connect it to Espressif's IoT cloud platform: [RainMaker][rainmaker].
 
+Also, there's support for [PVoutput.org][pvoutput] graphs since my meter
+is coupled to three 500W solar panels (one per phase) equipped with APC
+microinverters.
+
 ![power_meter_front](./img/yigedianqi_power_meter_front.png)
 
 There are several branches, all of them with custom setups that work
@@ -63,3 +67,4 @@ There are a few vague, vestigial references online about this power meter:
 [redepin]: https://github.com/eModbus/eModbus/blob/2c740aa0960328fb0851ab0ff771236b14ed7838/examples/RTU04example/main.cpp#L21
 [auto_rede]: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/uart.html#circuit-c-auto-switching-transmitter-receiver
 [guillermo_electrico]: https://github.com/GuillermoElectrico/energy-meter-logger
+[pvoutput]: https://pvoutput.org/
