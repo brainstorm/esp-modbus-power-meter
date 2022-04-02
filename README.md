@@ -32,6 +32,17 @@ Here's a picture at some of the hardware specs from the power meter:
 
 ## 🖥️ Code structure
 
+Don't forget to clone it like this, otherwise the RainMaker submodules
+will not be pulled and the code will not compile:
+
+```
+git clone --recursive https://github.com/brainstorm/yigedianqi-modbus/
+```
+
+[When and if Espressif merges my RainMaker power metering PR, I'll
+repoint those submodules away from my
+fork][espressif_rainmaker_powermeter_pr].
+
 The protocol used on top of RS485 is Modbus-RTU with 8N1 parity and with this code is acting as a `master` and the power meter as `master`.
 
 * `app_modbus.c`: ModBus RTU code
@@ -68,3 +79,4 @@ There are a few vague, vestigial references online about this power meter:
 [auto_rede]: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/uart.html#circuit-c-auto-switching-transmitter-receiver
 [guillermo_electrico]: https://github.com/GuillermoElectrico/energy-meter-logger
 [pvoutput]: https://pvoutput.org/
+[espressif_rainmaker_powermeter_pr]: https://github.com/espressif/esp-rainmaker/pull/121

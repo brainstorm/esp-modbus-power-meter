@@ -10,4 +10,3 @@ dependencies.lock
 *.old
 *.lock
 managed_components
-app_pvoutput_secrets.h

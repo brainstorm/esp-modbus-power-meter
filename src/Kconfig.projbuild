@@ -1,5 +1,15 @@
-menu "Modbus Power Meter configuration"
-
+menu "Yigedianqi Power Meter settings"
+    config PVOUTPUT_ORG_API_KEY
+        string "PVOutput.org API Key"
+	default "<API KEY HERE>"
+        help
+            PVOutput.org programmatic API Key used to report current
+	    power, voltage, etc...
+    config PVOUTPUT_ORG_SYSTEM_ID
+        string "PVoutput.org System Id"
+	default "<SYSTEM_ID_HERE>"
+	help
+	    PVOutput.org specific system id (solar panels) we are monitoring
     config MB_UART_PORT_NUM
         int "UART port number"
         range 0 2 if IDF_TARGET_ESP32 || IDF_TARGET_ESP32S3

@@ -1,10 +1,10 @@
 #include <esp_rmaker_utils.h>
 #include <string.h>
 
+#include "sdkconfig.h"
 #include "app_pvoutput_org.h"
 #include "app_wifi.h"
 #include "app_time.h"
-#include "app_pvoutput_secrets.h"
 
 #define MAX_HTTP_RECV_BUFFER    512
 #define MAX_HTTP_OUTPUT_BUFFER  8192
@@ -115,8 +115,8 @@ void pvoutput_update()
     esp_http_client_handle_t client = esp_http_client_init(&config);
 
     esp_http_client_set_header(client, "Content-Type", "application/json");
-    esp_http_client_set_header(client, "X-Pvoutput-Apikey", PVOUTPUT_API_KEY);
-    esp_http_client_set_header(client, "X-Pvoutput-SystemId", PVOUTPUT_SYSTEM_ID);
+    esp_http_client_set_header(client, "X-Pvoutput-Apikey", CONFIG_PVOUTPUT_ORG_API_KEY);
+    esp_http_client_set_header(client, "X-Pvoutput-SystemId", CONFIG_PVOUTPUT_ORG_SYSTEM_ID);
 
     ESP_LOGI(TAG, "Sending power data to: https://%s%s%s", config.host, config.path, g_pvoutput_query_string);
     esp_err_t err = esp_http_client_perform(client);
