@@ -140,7 +140,7 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
-# App - Power Meter settings
+# Yigedianqi Power Meter settings
 #
 CONFIG_PVOUTPUT_ORG_API_KEY="<API KEY HERE>"
 CONFIG_PVOUTPUT_ORG_SYSTEM_ID="<SYSTEM_ID_HERE>"
@@ -150,7 +150,7 @@ CONFIG_MB_UART_RXD=8
 CONFIG_MB_UART_TXD=9
 CONFIG_MB_UART_RTS=10
 CONFIG_MB_COMM_MODE_RTU=y
-# end of App - Power Meter settings
+# end of Yigedianqi Power Meter settings
 
 #
 # ESP RainMaker Config
