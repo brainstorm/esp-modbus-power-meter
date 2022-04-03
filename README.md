@@ -1,7 +1,7 @@
 # ⚡ ModBus ESP32 reader for a cheap chinese power meter
 
 This repo details how to use a [Saola-1 ESP32S2 board](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/hw-reference/esp32s2/user-guide-saola-1-v1.2.html) coupled with [a RS485 transceiver from
-LinkSprite](http://shieldlist.org/linksprite/rs485) and connect it to Espressif's IoT cloud platform: [RainMaker][rainmaker].
+LinkSprite][linksprite_rs485_shield] and connect it to Espressif's IoT cloud platform: [RainMaker][rainmaker].
 
 Also, there's support for [PVoutput.org][pvoutput] graphs since my meter
 is coupled to three 500W solar panels (one per phase) equipped with APC
@@ -80,3 +80,4 @@ There are a few vague, vestigial references online about this power meter:
 [guillermo_electrico]: https://github.com/GuillermoElectrico/energy-meter-logger
 [pvoutput]: https://pvoutput.org/
 [espressif_rainmaker_powermeter_pr]: https://github.com/espressif/esp-rainmaker/pull/121
+[linksprite_rs485_shield]: https://www.electan.com/rs485-shield-amp-4078-en.html
