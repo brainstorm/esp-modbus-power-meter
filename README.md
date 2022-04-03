@@ -23,7 +23,8 @@ with PlatformIO IDE with varying degrees of success:
 
 The hardware setup is very similar to [this eModbus hardware example thread][emodbus_hardware_example] with a couple of notable differences:
 
-1) The use of a [ttl level converter][ttl_level_converter] between the MAX458CPE RS485 (5V level) transceiver and the Espressif board (which is 3.3V level).
+1) The use of a [ttl level converter][ttl_level_converter] between the
+`MAX481CSA` RS485 (5V level) transceiver and the Espressif board (which is 3.3V level).
 2) RE/DE circuitry is handled by the LinkSprite shield instead of [via software with `REDEPIN`][redepin]. This is because [the shield has a transistor-based automatic switching between transmitting and receiving][auto_rede].
 
 Here's a picture at some of the hardware specs from the power meter:
