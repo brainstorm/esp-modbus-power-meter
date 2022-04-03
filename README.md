@@ -14,10 +14,12 @@ with PlatformIO IDE with varying degrees of success:
 
 ## 🎋 Branches
 
-* master: FreeModbus from ESP-IDF framework with PVoutput.org and RainMaker
-    support.
+* master: FreeModbus from ESP-IDF framework with PVoutput.org and RainMaker support.
 * emodbus: [eModbus][emodbus] with Arduino, first time I got the Modbus holding registers listed thanks to [this eModbus discussion thread][emodbus_hardware_discussion].
-* arduino-rainmaker: Same as emodbus, but trying to mix in RainMaker, ultimately switching to ESP-IDF (on `master`) after realising that Arduino support for RainMaker is in the works at the time of writing this.
+* arduino-rainmaker: Same as emodbus, but trying to mix in RainMaker,
+ultimately switching to ESP-IDF (on `master`) after realising that
+[Arduino support for RainMaker has some rough edges at the time of
+writing this](https://esp32.com/viewtopic.php?f=41&t=26552).
 
 ## 🤖 Hardware setup
 
