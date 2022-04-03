@@ -24,8 +24,12 @@ with PlatformIO IDE with varying degrees of success:
 The hardware setup is very similar to [this eModbus hardware example thread][emodbus_hardware_example] with a couple of notable differences:
 
 1) The use of a [ttl level converter][ttl_level_converter] between the
-`MAX481CSA` RS485 (5V level) transceiver and the Espressif board (which is 3.3V level).
-2) RE/DE circuitry is handled by the LinkSprite shield instead of [via software with `REDEPIN`][redepin]. This is because [the shield has a transistor-based automatic switching between transmitting and receiving][auto_rede].
+[`MAX481CSA` RS485 (5V level)][MAX481] transceiver and the Espressif board (which is 3.3V level).
+2) RE/DE circuitry is handled by the LinkSprite shield instead of [via
+software with `REDEPIN`][redepin]. This is because [the shield has a
+transistor-based automatic switching between transmitting and
+receiving][auto_rede], see the schematic in
+[docs/linksprite_shield_datasheet.pdf][linksprite_rs485_shield_schematic]
 
 Here's a picture at some of the hardware specs from the power meter:
 
@@ -82,3 +86,5 @@ There are a few vague, vestigial references online about this power meter:
 [pvoutput]: https://pvoutput.org/
 [espressif_rainmaker_powermeter_pr]: https://github.com/espressif/esp-rainmaker/pull/121
 [linksprite_rs485_shield]: https://www.electan.com/rs485-shield-amp-4078-en.html
+[MAX481]: https://github.com/brainstorm/yigedianqi-modbus/blob/master/docs/max481csa.pdf
+[linksprite_rs485_shield_schematic]:  https://github.com/brainstorm/yigedianqi-modbus/blob/master/docs/linksprite_shield_datasheet.pdf
