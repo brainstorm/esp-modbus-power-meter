@@ -1,0 +1,14 @@
+
+version: "1.0.0"
+description: ESP-MODBUS-POWER-METER is an unofficial Modbus library for power metering.
+url: https://github.com/brainstorm/esp-modbus-power-meter
+dependencies:
+  idf: ">=4.4"
+#  rainmaker: "?"
+#  pvoutputorg: "?"
+files:
+  exclude:
+    - "docs/_build/**/*"
+    - "docs/_build"
+    - "test/**/build/**/*"
+    - "test/**/build"
