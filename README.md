@@ -1,4 +1,4 @@
-# ⚡ ModBus Espressif support for power meters
+# ⚡ ModBus (unofficial) Espressif support for power meters
 
 This repo details how to use a [Saola-1 ESP32S2 board](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/hw-reference/esp32s2/user-guide-saola-1-v1.2.html) coupled with [a RS485 transceiver from
 LinkSprite][linksprite_rs485_shield] and connect it to Espressif's IoT cloud platform: [RainMaker][rainmaker].
