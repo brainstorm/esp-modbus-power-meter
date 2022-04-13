@@ -1,4 +1,45 @@
-menu "Yigedianqi Power Meter settings"
+menu "Modbus Power Meter settings"
+    choice POWER_METER_MODEL
+        prompt "Power meter make and model"
+        help
+            "Selects the power meter model. Please report back if UNTESTED meter works!"
+        default POWER_METER_MODEL_YG899_S9Y
+
+        config POWER_METER_MODEL_YG899_S9Y
+            bool "Yigedianqi YG899_S9Y"
+            default true
+        
+        config POWER_METER_MODEL_YG912_S9Y
+            bool "Yigedianqi YG912_S9Y (UNTESTED)"
+
+        config POWER_METER_MODEL_YG914E_95Y
+            bool "Yigedianqi YG194E_95Y (UNTESTED)"
+
+        config POWER_METER_MODEL_DDS238_1_ZN
+            bool "DDS238_1_ZN (UNTESTED)"
+
+        config POWER_METER_MODEL_PAC3100
+            bool "PAC3100 (UNTESTED)"
+        
+        config POWER_METER_MODEL_PZEM_016
+            bool "PZEM-016 (UNTESTED)"
+        
+        config POWER_METER_MODEL_SDM120
+            bool "SDM120 (UNTESTED)"
+
+        config POWER_METER_MODEL_SDM220
+            bool "SDM220 (UNTESTED)"
+        
+        config POWER_METER_MODEL_SDM630
+            bool "SDM630 (UNTESTED)"
+
+        config POWER_METER_MODEL_SMART_X96
+            bool "SMART-X96 (UNTESTED)"
+
+        config POWER_METER_MODEL_SMART_X96_HARMONIC
+            bool "SMART-X96 HARMONIC (UNTESTED)"
+    endchoice
+
     config PVOUTPUT_ORG_API_KEY
         string "PVOutput.org API Key"
 	default "<API KEY HERE>"

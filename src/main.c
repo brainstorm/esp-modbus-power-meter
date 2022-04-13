@@ -23,6 +23,6 @@ void app_main(void)
     ESP_LOGI(TAG, "All systems go");
     app_rmaker_init();      /* Initialize all things ESP RainMaker Cloud and ESP Insights */
     app_modbus_init();      /* Initialize the power meter */
-    app_pvoutput_init();    /* PVoutput.org: initialize after RMaker (system clock (SNTP) set) */
+    //app_pvoutput_init();    /* PVoutput.org: initialize after RMaker (system clock (SNTP) set) */
     //app_rgbled_init();
 }
