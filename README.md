@@ -1,4 +1,4 @@
-# ⚡ ModBus ESP32 reader for a cheap chinese power meter
+# ⚡ ModBus Espressif support for power meters
 
 This repo details how to use a [Saola-1 ESP32S2 board](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/hw-reference/esp32s2/user-guide-saola-1-v1.2.html) coupled with [a RS485 transceiver from
 LinkSprite][linksprite_rs485_shield] and connect it to Espressif's IoT cloud platform: [RainMaker][rainmaker].
@@ -8,6 +8,7 @@ is coupled to three 500W solar panels (one per phase) equipped with APC
 microinverters.
 
 ![power_meter_front](./img/yigedianqi_power_meter_front.png)
+![supported_power_meters](./img/menuconfig_power_meters.png)
 
 There are several branches, all of them with custom setups that work
 with PlatformIO IDE with varying degrees of success:
@@ -43,7 +44,8 @@ Don't forget to clone it like this, otherwise the RainMaker submodules
 will not be pulled and the code will not compile:
 
 ```
-git clone --recursive https://github.com/brainstorm/yigedianqi-modbus/
+git clone --recursive
+https://github.com/brainstorm/esp-modbus-power-meter/
 ```
 
 [When and if Espressif merges my RainMaker power metering PR, I'll
@@ -53,6 +55,8 @@ fork][espressif_rainmaker_powermeter_pr].
 The protocol used on top of RS485 is Modbus-RTU with 8N1 parity and with this code is acting as a `master` and the power meter as `master`.
 
 * `app_modbus.c`: ModBus RTU code
+* **`include/cid_tables.h`: Definitions of the Modbus registers for the
+several power meters supported**
 * `app_rmaker.c`: RainMaker setup for parameters and updates.
 * `app_time.c`: PVoutput.org time and date formatting for watts submission.
 * `app_rgbled.c`: Nothing to see here, move along XD
@@ -61,8 +65,9 @@ The protocol used on top of RS485 is Modbus-RTU with 8N1 parity and with this co
 ## ✋ How can you contribute?
 
 1. Review your own power meter's manual and find the register(s) listing.
-3. Come up with a way to share this codebase with other third party (custom) ModBus power meter definitions and submit a pullrequest with [CID characteristics like mine here](https://github.com/brainstorm/yigedianqi-modbus/blob/f6a4d453bac206fb2ed3160085f9e9adee2a0960/src/app_modbus.c#L120-L161).
-4. Code review, audit and clean my messy code, specially the use of global variables and **substitute it with proper FreeRTOS queues, semaphores and mutexes instead**.
+1. Submit a pullrequest with a CID table for your meter (**see
+include/cid_tables.h**)
+1. Code review, audit and clean my messy code, specially the use of global variables and **substitute it with proper FreeRTOS queues, semaphores and mutexes instead**.
 
 ## 🌀 Random notes
 
