@@ -68,10 +68,12 @@ The protocol used on top of RS485 is Modbus-RTU with 8N1 parity and with this co
 
 There are a few vague, vestigial references online about this power meter:
 
-1. There's a [youtube][youtube_usage] video showing the default setup password and some basic usage/configuration.
-2. A possible company spinoff, [from yiGedianqi to yiHedianqi][possible_company_spinoff]?
-3. Several [Amazon customers rating this meter][amazon_power_meter_ratings] and pointing out that it only comes with a chinese manual (true story).
-4. [A similar project, including Grafana, RPi and other power meters supported.][guillermo_electrico]
+1. There's a [youtube][youtube_usage] video showing the default setup
+password and some basic usage/configuration as well as a full teardown.
+video][yigedianqi_teardown] 
+1. A possible company spinoff, [from yiGedianqi to yiHedianqi][possible_company_spinoff]?
+1. Several [Amazon customers rating this meter][amazon_power_meter_ratings] and pointing out that it only comes with a chinese manual (true story).
+1. [A similar project, including Grafana, RPi and other power meters supported.][guillermo_electrico]
 
 
 [youtube_usage]: https://www.youtube.com/watch?v=22_Wp99j8_U
