@@ -7,7 +7,6 @@ menu "Modbus Power Meter settings"
 
         config POWER_METER_MODEL_YG899_S9Y
             bool "Yigedianqi YG899_S9Y"
-            default true
         
         config POWER_METER_MODEL_YG912_S9Y
             bool "Yigedianqi YG912_S9Y (UNTESTED)"
@@ -39,6 +38,18 @@ menu "Modbus Power Meter settings"
         config POWER_METER_MODEL_SMART_X96_HARMONIC
             bool "SMART-X96 HARMONIC (UNTESTED)"
     endchoice
+
+    config RMAKER_SERVICE_ENABLE
+        bool "Enable Rmaker service"
+        default false
+        help
+            "Enable the Rmaker service. This is a service that allows you to control your power meter from the Espressif's RMaker cloud."
+
+    config PVOUTPUT_ORG_SERVICE_ENABLE
+        bool "Enable PVOutput.org service"
+        default false
+        help
+            "Enables the PVOutput.org service. This service will send data to the PVOutput.org service. See https://pvoutput.org/ for more information."
 
     config PVOUTPUT_ORG_API_KEY
         string "PVOutput.org API Key"

@@ -21,7 +21,9 @@ void app_main(void)
     ESP_ERROR_CHECK( err );
     
     ESP_LOGI(TAG, "All systems go");
+    #if CONFIG_RMAKER_SERVICE_ENABLE
     app_rmaker_init();      /* Initialize all things ESP RainMaker Cloud and ESP Insights */
+    #endif
     app_modbus_init();      /* Initialize the power meter */
     //app_pvoutput_init();    /* PVoutput.org: initialize after RMaker (system clock (SNTP) set) */
     //app_rgbled_init();

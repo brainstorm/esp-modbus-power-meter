@@ -28,7 +28,10 @@ holding_reg_params_t holding_reg_params = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 float g_current_volts = -0.1;
 float g_current_watts = -0.1;
 
-#define MB_REPORTING_PERIOD    60*1000*5/portTICK_PERIOD_MS /* Report every 5 minutes, to avoid rate limiting, especially on pvoutput.org */
+// #define MB_REPORTING_PERIOD    60*1000*5/portTICK_PERIOD_MS /* Report every 5 minutes, to avoid rate limiting, especially on pvoutput.org */
+
+// Every 5 seconds for debugging purposes
+#define MB_REPORTING_PERIOD    5*1000/portTICK_PERIOD_MS
 
 // Newer ESP-IDF versions (>4.4) switch to MB_RETURN_ON_FALSE macro instead
 #define MASTER_CHECK(a, ret_val, str, ...) \
@@ -114,12 +117,15 @@ static void read_power_meter()
                                         current_value,
                                         *(uint32_t*)temp_data_ptr);
 
+                        #if CONFIG_RMAKER_SERVICE_ENABLE
                         // Send parameters collected from ModBus to RMaker cloud as parameters
                         // few seconds to avoid rate limiting?
                         // TODO: Batch and store those queries on a queue instead
                         vTaskDelay(1000/portTICK_PERIOD_MS);
                         send_to_rmaker_cloud(cid, current_value, power_sensor_device);
+                        #endif
 
+                        #if CONFIG_PVOUTPUT_ORG_SERVICE_ENABLE
                         // Horrible hack: Both rmaker cloud and pvoutput are time-coupled now,
                         // I need to use queues and do some proper refactoring, running out of time now though :-S
                         if (cid == 3) { // Power (Watts)
@@ -128,7 +134,8 @@ static void read_power_meter()
                         } else if (cid == 6) { // Volts phase 1
                             g_current_volts = current_value;
                             pvoutput_update(current_value);
-                        }                    
+                        }
+                        #endif
                     }
                 } else {
                     ESP_LOGE(TAG, "Characteristic #%d (%s) read fail, err = 0x%x (%s).",
