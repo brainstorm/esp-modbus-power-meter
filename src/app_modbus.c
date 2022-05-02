@@ -29,7 +29,7 @@ float g_current_volts = -0.1;
 float g_current_watts = -0.1;
 
 //#define MB_REPORTING_PERIOD    60*1000*5/portTICK_PERIOD_MS /* Report every 5 minutes, to avoid rate limiting, especially on pvoutput.org */
-#define MB_REPORTING_PERIOD    60*1000*1/portTICK_PERIOD_MS /* Report every minute, to avoid rate limiting, especially on pvoutput.org */
+#define MB_REPORTING_PERIOD    5*1000/portTICK_PERIOD_MS /* Report every 5 seconds */
 
 // Every second for debugging purposes
 //#define MB_REPORTING_PERIOD    1*1000/portTICK_PERIOD_MS
@@ -83,8 +83,39 @@ static void* master_get_param_data(const mb_parameter_descriptor_t* param_descri
     }
     return instance_ptr;
 }
+// Read all possible (reasonable HOLDING REGISTER registers),
+// This is to discover possible weird meter encodings and potentially
+// self-configure CID tables (highly experimental)
+static void discover_holding_registers()
+{
 
-// Read power meter values over modbus, report to rainmaker
+    esp_err_t err = ESP_OK;
+    float current_value = 0;
+    uint8_t type = 0;
+    const mb_parameter_descriptor_t* param_descriptor = NULL;
+    void* temp_data_ptr = master_get_param_data(param_descriptor);
+
+    for (uint16_t cid = 0; (err != ESP_ERR_NOT_FOUND) && cid < MASTER_MAX_CIDS; cid++) {
+        err = mbc_master_get_parameter(cid, (char*)param_descriptor->param_key,
+                                                    (uint8_t*)&current_value, &type);
+        if (err == ESP_OK) {
+            *(float*)temp_data_ptr = current_value;
+                    if (param_descriptor->mb_param_type == MB_PARAM_HOLDING) {
+                        ESP_LOGI(TAG, "Characteristic #%d %s (%s) value = %lf (0x%x) read successful.",
+                                        param_descriptor->cid,
+                                        (char*)param_descriptor->param_key,
+                                        (char*)param_descriptor->param_units,
+                                        current_value,
+                                        *(uint32_t*)temp_data_ptr);
+
+                    }
+        }
+    }
+ 
+}
+
+
+// Read power meter values over modbus, optionally report to rainmaker and pvoutput.org
 static void read_power_meter()
 {
     esp_err_t err = ESP_OK;
