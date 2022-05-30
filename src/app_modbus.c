@@ -109,9 +109,15 @@ static void discover_holding_registers()
                                         *(uint32_t*)temp_data_ptr);
 
                     }
-        }
+        } else {
+                    ESP_LOGE(TAG, "Characteristic #%d (%s) read fail, err = 0x%x (%s).",
+                                        param_descriptor->cid,
+                                        (char*)param_descriptor->param_key,
+                                        (int)err,
+                                        (char*)esp_err_to_name(err));
+                }
+        vTaskDelay(POLL_TIMEOUT_TICS); // timeout between polls
     }
- 
 }
 
 
@@ -181,8 +187,6 @@ static void read_power_meter()
         }
         vTaskDelay(MB_REPORTING_PERIOD);
     }
-    // ESP_LOGI(TAG, "Destroy master...");
-    // ESP_ERROR_CHECK(mbc_master_destroy());
 }
 
 // Modbus master initialization
@@ -240,7 +244,8 @@ esp_err_t app_modbus_init()
 {
     mb_master_init();
 
-    xTaskCreate(read_power_meter, "modbus_task", 16384, NULL, 5, NULL);
+    //xTaskCreate(read_power_meter, TAG, 16384, NULL, 5, NULL);
+    xTaskCreate(discover_holding_registers, TAG, 16384, NULL, 5, NULL);
 
     // The task above should never end, if it does, that's a fail :-!
     return ESP_FAIL;
