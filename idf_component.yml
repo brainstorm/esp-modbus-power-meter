@@ -4,6 +4,8 @@ url: https://github.com/brainstorm/esp-modbus-power-meter
 dependencies:
   espressif/esp-modbus:
     version: "^1.0"
+  espressif/cbor:
+    version: "==0.5.4"
   espressif/mdns:
     version: "^1.0"
     rules:

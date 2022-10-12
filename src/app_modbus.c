@@ -11,6 +11,7 @@
 
 // FreeModbus
 #include "cid_tables.h"
+//#include "include/cid_tables.h" // for non-platform-io compilation
 
 // RainMaker
 #include <esp_rmaker_core.h>
