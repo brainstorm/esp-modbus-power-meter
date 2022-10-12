@@ -1,8 +1,13 @@
-
 version: "1.0.0"
 description: ESP-MODBUS-POWER-METER is an unofficial Modbus library for power metering.
 url: https://github.com/brainstorm/esp-modbus-power-meter
 dependencies:
+  espressif/esp-modbus:
+    version: "^1.0"
+  espressif/mdns:
+    version: "^1.0"
+    rules:
+      - if: "idf_version >=5.0"
   idf: ">=4.4"
 #  rainmaker: "?"
 #  pvoutputorg: "?"
