@@ -29,7 +29,7 @@ char* get_pvoutput_fmt_time() {
     localtime_r(&now, &timeinfo);
     strftime(strftime_buf, sizeof(strftime_buf), "%H:%M", &timeinfo);
     final_date_string = calloc(1, sizeof(strftime_buf));
-    strncat(final_date_string, strftime_buf, PVOUTOUT_TIME_STR_MAX_LEN);
+    strncat(final_date_string, strftime_buf, PVOUTOUT_TIME_STR_MAX_LEN - 1);
 
     return final_date_string;
 }
@@ -48,7 +48,7 @@ char* get_pvoutput_fmt_date() {
     localtime_r(&now, &timeinfo);
     strftime(strftime_buf, sizeof(strftime_buf), "%Y%m%d", &timeinfo);
     final_date_string = calloc(1, sizeof(strftime_buf));
-    strncat(final_date_string, strftime_buf, PVOUTPUT_DATE_STR_MAX_LEN);
+    strncat(final_date_string, strftime_buf, PVOUTPUT_DATE_STR_MAX_LEN - 1);
 
     return final_date_string;
 }
