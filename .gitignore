@@ -10,3 +10,4 @@ dependencies.lock
 *.old
 *.lock
 managed_components
+sdkconfig.esp32-s2-saola-1
