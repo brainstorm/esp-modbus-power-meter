@@ -28,8 +28,8 @@ extern float g_current_watts;
 esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 {
     switch(evt->event_id) {
-        // case HTTP_EVENT_REDIRECT:
-        //     break;
+        case HTTP_EVENT_REDIRECT:
+            break;
         case HTTP_EVENT_ERROR:
             ESP_LOGI(TAG, "HTTP_EVENT_ERROR");
             break;
@@ -121,7 +121,7 @@ void pvoutput_update()
     ESP_LOGI(TAG, "Sending power data to: https://%s%s%s", config.host, config.path, g_pvoutput_query_string);
     esp_err_t err = esp_http_client_perform(client);
     if (err == ESP_OK) {
-        ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %d",
+        ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %"PRIi64,
                 esp_http_client_get_status_code(client),
                 esp_http_client_get_content_length(client));
     } else {

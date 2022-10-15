@@ -112,7 +112,7 @@ static void read_power_meter()
                 if (err == ESP_OK) {
                     *(float*)temp_data_ptr = current_value;
                     if (param_descriptor->mb_param_type == MB_PARAM_HOLDING) {
-                        ESP_LOGI(TAG, "Characteristic #%d %s (%s) value = %lf (0x%x) read successful.",
+                        ESP_LOGI(TAG, "Characteristic #%d %s (%s) value = %lf (0x%"PRIu32") read successful.",
                                         param_descriptor->cid,
                                         (char*)param_descriptor->param_key,
                                         (char*)param_descriptor->param_units,
@@ -171,11 +171,11 @@ static esp_err_t mb_master_init()
     MASTER_CHECK((master_handler != NULL), ESP_ERR_INVALID_STATE,
                                 "mb controller initialization fail.");
     MASTER_CHECK((err == ESP_OK), ESP_ERR_INVALID_STATE,
-                            "mb controller initialization fail, returns(0x%x).",
+                            "mb controller initialization fail, returns(0x%"PRIu32").",
                             (uint32_t)err);
     err = mbc_master_setup((void*)&comm);
     MASTER_CHECK((err == ESP_OK), ESP_ERR_INVALID_STATE,
-                            "mb controller setup fail, returns(0x%x).",
+                            "mb controller setup fail, returns(0x%"PRIu32").",
                             (uint32_t)err);
 
     // Set UART pin numbers
@@ -183,23 +183,23 @@ static esp_err_t mb_master_init()
                               UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 
     MASTER_CHECK((err == ESP_OK), ESP_ERR_INVALID_STATE,
-            "mb serial set pin failure, uart_set_pin() returned (0x%x).", (uint32_t)err);
+            "mb serial set pin failure, uart_set_pin() returned (0x%"PRIu32").", (uint32_t)err);
 
     err = mbc_master_start();
     MASTER_CHECK((err == ESP_OK), ESP_ERR_INVALID_STATE,
-                            "mb controller start fail, returns(0x%x).",
+                            "mb controller start fail, returns(0x%"PRIu32").",
                             (uint32_t)err);
     
     // Set driver mode to Half Duplex
     err = uart_set_mode(MB_PORT_NUM, UART_MODE_RS485_HALF_DUPLEX);
     //err = uart_set_mode(MB_PORT_NUM, UART_MODE_UART);
     MASTER_CHECK((err == ESP_OK), ESP_ERR_INVALID_STATE,
-            "mb serial set mode failure, uart_set_mode() returned (0x%x).", (uint32_t)err);
+            "mb serial set mode failure, uart_set_mode() returned (0x%"PRIu32").", (uint32_t)err);
 
     vTaskDelay(5);
     err = mbc_master_set_descriptor(&device_parameters[0], num_device_parameters);
     MASTER_CHECK((err == ESP_OK), ESP_ERR_INVALID_STATE,
-                                "mb controller set descriptor fail, returns(0x%x).",
+                                "mb controller set descriptor fail, returns(0x%"PRIu32").",
                                 (uint32_t)err);
     
     ESP_LOGI(TAG, "Modbus master stack initialized...");
