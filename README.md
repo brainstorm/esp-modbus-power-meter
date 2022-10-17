@@ -65,9 +65,7 @@ several power meters supported**
 ## ✋ How can you contribute?
 
 1. Review your own power meter's manual and find the register(s) listing.
-1. Submit a pullrequest with a CID table for your meter (**see
-include/cid_tables.h**)
-1. Code review, audit and clean my messy code, specially the use of global variables and **substitute it with proper FreeRTOS queues, semaphores and mutexes instead**.
+1. Submit a pullrequest with a CID table for your meter (**see include/cid_tables.h**)
 
 ## 🌀 Random notes
 
