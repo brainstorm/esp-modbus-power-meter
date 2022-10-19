@@ -34,9 +34,10 @@ enum {
     CID_COUNT
 };
 
-const mb_parameter_descriptor_t device_parameters[] = {
+extern const mb_parameter_descriptor_t device_parameters[] = {
 #if CONFIG_POWER_METER_MODEL_YG899E_S9Y
-    //{ CID, Param Name, Units, Modbus Slave Addr, Modbus Reg Type, Reg Start, Reg Size, Instance Offset, Data Type, Data Size, Parameter Options, Access Mode}
+    //{ CID, Param Name, Units, Modbus Slave Addr, Modbus Reg Type, Reg Start, Reg Size,
+    //      Instance Offset, Data Type, Data Size, Parameter Options, Access Mode}
     { CID_HOLD_DATA_0, STR("Amps_phase_1"), STR("A"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x35, 2,
             HOLD_OFFSET(holding_data0), PARAM_TYPE_FLOAT, PARAM_SIZE_FLOAT, OPTS( 0, 5000, .001 ), PAR_PERMS_READ },
     { CID_HOLD_DATA_1, STR("Amps_phase_2"), STR("A"), MB_DEVICE_ADDR1, MB_PARAM_HOLDING, 0x37, 2,

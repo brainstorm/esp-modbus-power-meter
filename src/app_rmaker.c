@@ -1,5 +1,5 @@
 #include "app_rmaker.h"
-#include "modbus_params.h"
+#include "app_modbus.h"
 
 static const char *TAG = "app_rmaker";
 esp_rmaker_device_t *power_sensor_device;

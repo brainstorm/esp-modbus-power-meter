@@ -1,12 +1,19 @@
 #include <string.h>
+
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <freertos/queue.h>
+#include "freertos/event_groups.h"
+
 #include <esp_log.h>
 #include <nvs_flash.h>
 
 #include "app_modbus.h"
 #include "app_rmaker.h"
 #include "app_pvoutput_org.h"
+
+#define MB_DATA_STATUS_BIT  BIT0    // 0: Data fetched, 1: Data pending
+#define RMAKER_STATUS_BIT   BIT1    // ...
 
 static const char *TAG = "app_main";
 
@@ -22,9 +29,9 @@ void app_main(void)
     
     ESP_LOGI(TAG, "All systems go");
     #if CONFIG_RMAKER_SERVICE_ENABLE
-    app_rmaker_init();      /* Initialize all things ESP RainMaker Cloud and ESP Insights */
+    app_rmaker_init();        /* Initialize all things ESP RainMaker Cloud and ESP Insights */
     #endif
-    app_modbus_init();      /* Initialize the power meter */
+    app_modbus_init();        /* Initialize the power meter */
     //app_pvoutput_init();    /* PVoutput.org: initialize after RMaker (system clock (SNTP) set) */
     //app_rgbled_init();
 }

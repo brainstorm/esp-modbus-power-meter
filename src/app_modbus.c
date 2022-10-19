@@ -1,67 +1,41 @@
 #include <stdio.h>
 #include <stdint.h>
 
+// FreeRTOS
 #include <freertos/FreeRTOS.h>
 #include <freertos/timers.h>
 
 // ESP
 #include "esp_log.h"            // for log_write
 #include "esp_err.h"
-#include "sdkconfig.h"
-
-// FreeModbus
-#include "cid_tables.h"
-//#include "include/cid_tables.h" // for non-platform-io compilation
 
 // RainMaker
 #include <esp_rmaker_core.h>
 #include <esp_rmaker_standard_types.h> 
 #include <esp_rmaker_standard_params.h> 
 
+// App specific
 #include "app_modbus.h"
 #include "app_rmaker.h"
 #include "app_pvoutput_org.h"
+#include "cid_tables.h"
 
 static const char *TAG = "app_modbus";
 
-holding_reg_params_t holding_reg_params = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+// XXX: Use groupbits to record pending/fetched info states
+// for each system we want to send the data to.
+// static QueueHandle_t mb_data_queue;
+//static EventGroupHandle_t mb_data_events;
 
 float g_current_volts = -0.1;
 float g_current_watts = -0.1;
 
-//#define MB_REPORTING_PERIOD    60*1000*5/portTICK_PERIOD_MS /* Report every 5 minutes, to avoid rate limiting, especially on pvoutput.org */
-#define MB_REPORTING_PERIOD    60*1000*1/portTICK_PERIOD_MS /* Report every minute, to avoid rate limiting, especially on pvoutput.org */
-
-// Every second for debugging purposes
-//#define MB_REPORTING_PERIOD    1*1000/portTICK_PERIOD_MS
-
-// Newer ESP-IDF versions (>4.4) switch to MB_RETURN_ON_FALSE macro instead
-#define MASTER_CHECK(a, ret_val, str, ...) \
-    if (!(a)) { \
-        ESP_LOGE(TAG, "%s(%u): " str, __FUNCTION__, __LINE__, ##__VA_ARGS__); \
-        return (ret_val); \
-    }
-
-#define MB_UART_RXD         (CONFIG_MB_UART_RXD)
-#define MB_UART_TXD         (CONFIG_MB_UART_TXD)
-#define MB_PORT_NUM         (CONFIG_MB_UART_PORT_NUM)
-#define MB_UART_SPEED       (CONFIG_MB_UART_BAUD_RATE)
-
-// Number of reading of parameters from slave
-#define MASTER_MAX_RETRY 30
-
-// Timeout to update cid over Modbus
-#define UPDATE_CIDS_TIMEOUT_MS          (500)
-#define UPDATE_CIDS_TIMEOUT_TICS        (UPDATE_CIDS_TIMEOUT_MS / portTICK_PERIOD_MS)
-
-// Timeout between polls
-#define POLL_TIMEOUT_MS                 (1)
-#define POLL_TIMEOUT_TICS               (POLL_TIMEOUT_MS / portTICK_PERIOD_MS)
-
-
-
+holding_reg_params_t holding_reg_params = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 // Calculate number of parameters in the table
 const uint16_t num_device_parameters = (sizeof(device_parameters)/sizeof(device_parameters[0]));
+
+// The number of parameters that intended to be used in the particular control process
+#define MASTER_MAX_CIDS num_device_parameters
 
 // Get pointer to parameter storage (instance) according to parameter description table
 static void* master_get_param_data(const mb_parameter_descriptor_t* param_descriptor)
@@ -92,15 +66,27 @@ static void read_power_meter()
     float current_value = 0;
     const mb_parameter_descriptor_t* param_descriptor = NULL;
 
+    // Holding only those three attributes, assuming floats across the board
+    // mb_parameter_descriptor_t has many info we do not use
+    typedef struct mb_reporting_unit_t {
+        const char* unit;
+        const char* key;
+        float value;
+    };
+    
+    struct mb_reporting_unit_t mb_readings[MASTER_MAX_CIDS];
+
     while(1) {
         ESP_LOGI(TAG, "Reading modbus holding registers from power meter...");
 
         // Read all found characteristics from slave(s)
         for (uint16_t cid = 0; (err != ESP_ERR_NOT_FOUND) && cid < MASTER_MAX_CIDS; cid++)
         {
-            // Get data from parameters description table
-            // and use this information to fill the characteristics description table
-            // to have all required fields in just one table
+            // XXX: After a batch of modbus queries is read, the consumers must flag thee
+            // data as fetched to avoid race conditions.
+            //
+            // There shall be a mechanism for timeouts though, since ModBus values cannot be
+            // stale just because there's a loss of connectivity or some cloud provider is down
             err = mbc_master_get_cid_info(cid, &param_descriptor);
             if ((err != ESP_ERR_NOT_FOUND) && (param_descriptor != NULL)) {
                 void* temp_data_ptr = master_get_param_data(param_descriptor);
@@ -119,25 +105,10 @@ static void read_power_meter()
                                         current_value,
                                         *(uint32_t*)temp_data_ptr);
 
-                        #if CONFIG_RMAKER_SERVICE_ENABLE
-                        // Send parameters collected from ModBus to RMaker cloud as parameters
-                        // few seconds to avoid rate limiting?
-                        // TODO: Batch and store those queries on a queue instead
-                        vTaskDelay(1000/portTICK_PERIOD_MS);
-                        send_to_rmaker_cloud(cid, current_value, power_sensor_device);
-                        #endif
-
-                        #if CONFIG_PVOUTPUT_ORG_SERVICE_ENABLE
-                        // Horrible hack: Both rmaker cloud and pvoutput are time-coupled now,
-                        // I need to use queues and do some proper refactoring, running out of time now though :-S
-                        if (cid == 3) { // Power (Watts)
-                            g_current_watts = current_value;
-                            pvoutput_update(current_value);
-                        } else if (cid == 6) { // Volts phase 1
-                            g_current_volts = current_value;
-                            pvoutput_update(current_value);
-                        }
-                        #endif
+                        // Add the informative triplets to the array, ready to report/send
+                        mb_readings[cid].key = param_descriptor->param_key;
+                        mb_readings[cid].value = current_value;
+                        mb_readings[cid].unit = param_descriptor->param_units;
                     }
                 } else {
                     ESP_LOGE(TAG, "Characteristic #%d (%s) read fail, err = 0x%x (%s).",
@@ -149,10 +120,10 @@ static void read_power_meter()
                 vTaskDelay(POLL_TIMEOUT_TICS); // timeout between polls
             }
         }
+        // XXX: Semaphore Give/Take logic here...
+
         vTaskDelay(MB_REPORTING_PERIOD);
     }
-    // ESP_LOGI(TAG, "Destroy master...");
-    // ESP_ERROR_CHECK(mbc_master_destroy());
 }
 
 // Modbus master initialization
