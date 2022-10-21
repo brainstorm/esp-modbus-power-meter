@@ -5,6 +5,7 @@
 #include "app_pvoutput_org.h"
 #include "app_wifi.h"
 #include "app_time.h"
+#include "app_modbus.h"
 
 #define MAX_HTTP_RECV_BUFFER    512
 #define MAX_HTTP_OUTPUT_BUFFER  8192
@@ -130,78 +131,9 @@ void pvoutput_update()
         #endif
                 esp_http_client_get_status_code(client),
                 esp_http_client_get_content_length(client));
+
+        xTaskNotifyGive(modbus_task);
     } else {
         ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
     }
-
-
-    /* TODO: Failed attempt to do HTTPS/TLS properly with mBedTLS, esp-idf examples are too involved :_S */
-
-    // esp_tls_cfg_t cfg = {
-    //     .use_global_ca_store = true,
-    // };
-
-    // esp_err_t err = esp_tls_set_global_ca_store(server_root_cert_pem_start, server_root_cert_pem_end - server_root_cert_pem_start);
-    // if (err != ESP_OK) {
-    //     ESP_LOGE(TAG, "Error in setting the global ca store: [%02X] (%s),could not complete the https_request using global_ca_store", err, esp_err_to_name(err));
-    //     return;
-    // }
-
-    // char buf[512];
-    // int ret, len;
-
-    // struct esp_tls *tls = esp_tls_conn_http_new("pvoutput.org", &cfg);
-
-    // if (tls != NULL) {
-    //     ESP_LOGI(TAG, "Connection established...");
-    // } else {
-    //     ESP_LOGE(TAG, "Connection failed...");
-    //     esp_tls_conn_destroy(tls);
-    // }
-
-    // size_t written_bytes = 0;
-    // do {
-    //     ret = esp_tls_conn_write(tls,
-    //                              REQUEST + written_bytes,
-    //                              strlen(REQUEST) - written_bytes);
-    //     if (ret >= 0) {
-    //         ESP_LOGI(TAG, "%d bytes written", ret);
-    //         written_bytes += ret;
-    //     } else if (ret != ESP_TLS_ERR_SSL_WANT_READ  && ret != ESP_TLS_ERR_SSL_WANT_WRITE) {
-    //         ESP_LOGE(TAG, "esp_tls_conn_write  returned: [0x%02X](%s)", ret, esp_err_to_name(ret));
-    //         esp_tls_conn_destroy(tls);
-    //     }
-    // } while (written_bytes < strlen(REQUEST));
-
-    // ESP_LOGI(TAG, "Reading HTTP response...");
-
-    // do {
-    //     len = sizeof(buf) - 1;
-    //     bzero(buf, sizeof(buf));
-    //     ret = esp_tls_conn_read(tls, (char *)buf, len);
-
-    //     if (ret == ESP_TLS_ERR_SSL_WANT_WRITE  || ret == ESP_TLS_ERR_SSL_WANT_READ) {
-    //         continue;
-    //     }
-
-    //     if (ret < 0) {
-    //         ESP_LOGE(TAG, "esp_tls_conn_read returned [-0x%02X](%s)", -ret, esp_err_to_name(ret));
-    //         break;
-    //     }
-
-    //     if (ret == 0) {
-    //         ESP_LOGI(TAG, "connection closed");
-    //         break;
-    //     }
-
-    //     len = ret;
-    //     ESP_LOGD(TAG, "%d bytes read", len);
-    //     /* Print response directly to stdout as it is read */
-    //     for (int i = 0; i < len; i++) {
-    //         putchar(buf[i]);
-    //     }
-    //     putchar('\n'); // JSON output doesn't have a newline at end
-    // } while (1);
-
-    // esp_tls_free_global_ca_store();
 }

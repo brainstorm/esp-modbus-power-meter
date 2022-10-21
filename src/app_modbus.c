@@ -4,6 +4,7 @@
 // FreeRTOS
 #include <freertos/FreeRTOS.h>
 #include <freertos/timers.h>
+#include <freertos/semphr.h>
 
 // ESP
 #include "esp_log.h"            // for log_write
@@ -22,15 +23,12 @@
 
 static const char *TAG = "app_modbus";
 
-// XXX: Use groupbits to record pending/fetched info states
-// for each system we want to send the data to.
-// static QueueHandle_t mb_data_queue;
-//static EventGroupHandle_t mb_data_events;
-
 float g_current_volts = -0.1;
 float g_current_watts = -0.1;
 
+// Holding reg init
 holding_reg_params_t holding_reg_params = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
 // Calculate number of parameters in the table
 const uint16_t num_device_parameters = (sizeof(device_parameters)/sizeof(device_parameters[0]));
 
@@ -65,14 +63,6 @@ static void read_power_meter()
     esp_err_t err = ESP_OK;
     float current_value = 0;
     const mb_parameter_descriptor_t* param_descriptor = NULL;
-
-    // Holding only those three attributes, assuming floats across the board
-    // mb_parameter_descriptor_t has many info we do not use
-    typedef struct mb_reporting_unit_t {
-        const char* unit;
-        const char* key;
-        float value;
-    };
     
     struct mb_reporting_unit_t mb_readings[MASTER_MAX_CIDS];
 
@@ -117,12 +107,17 @@ static void read_power_meter()
                                         (int)err,
                                         (char*)esp_err_to_name(err));
                 }
-                vTaskDelay(POLL_TIMEOUT_TICS); // timeout between polls
+                //vTaskDelay(POLL_TIMEOUT_TICS); // timeout between polls
             }
         }
-        // XXX: Semaphore Give/Take logic here...
-
-        vTaskDelay(MB_REPORTING_PERIOD);
+        // We might want to use *Indexed methods to avoid index 0, which clash with Streaming in FreeRTOS
+        // 
+        // "FreeRTOS Stream and Message Buffers use the task notification at array index 0. 
+        // If you want to maintain the state of a task notification across a call to a Stream 
+        // or Message Buffer API function then use a task notification at an array index greater than 0."
+        
+        xTaskNotifyWait(0, ULONG_MAX, NULL, portMAX_DELAY);
+        //vTaskDelay(MB_REPORTING_PERIOD);
     }
 }
 
@@ -181,7 +176,7 @@ esp_err_t app_modbus_init()
 {
     mb_master_init();
 
-    xTaskCreate(read_power_meter, "modbus_task", 16384, NULL, 5, NULL);
+    xTaskCreate(read_power_meter, "modbus_task", 16384, NULL, 5, &modbus_task);
 
     // The task above should never end, if it does, that's a fail :-!
     return ESP_FAIL;

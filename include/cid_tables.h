@@ -34,7 +34,7 @@ enum {
     CID_COUNT
 };
 
-extern const mb_parameter_descriptor_t device_parameters[] = {
+const mb_parameter_descriptor_t device_parameters[] = {
 #if CONFIG_POWER_METER_MODEL_YG899E_S9Y
     //{ CID, Param Name, Units, Modbus Slave Addr, Modbus Reg Type, Reg Start, Reg Size,
     //      Instance Offset, Data Type, Data Size, Parameter Options, Access Mode}

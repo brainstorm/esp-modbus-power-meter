@@ -2,8 +2,6 @@
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <freertos/queue.h>
-#include "freertos/event_groups.h"
 
 #include <esp_log.h>
 #include <nvs_flash.h>
@@ -16,6 +14,10 @@
 #define RMAKER_STATUS_BIT   BIT1    // ...
 
 static const char *TAG = "app_main";
+
+// To pass around task notification/syncronization logic and read Modbus Data
+TaskHandle_t modbus_task;
+struct mb_reporting_unit_t mb_readings;
 
 void app_main(void)
 {

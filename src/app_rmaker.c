@@ -91,101 +91,106 @@ void create_rmaker_secondary_parameters(esp_rmaker_device_t *device){
 
 /* Sends parameters collected on the ModBus table towards rainmaker cloud */
 void send_to_rmaker_cloud(uint16_t cid, float value, const esp_rmaker_device_t *device) {
-    switch (cid)
-    {
-        case 0: {
-            esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(device, "Amps_phase_1"),
-                esp_rmaker_float(value));
+    //    for (uint8_t cid = 0; *mb_readings[cid].cid; cid++) {
+        switch (cid)
+        {
+            case 0: {
+                esp_rmaker_param_update_and_report(
+                    esp_rmaker_device_get_param_by_name(device, "Amps_phase_1"),
+                    esp_rmaker_float(value));
+            }
+            break;
+            case 1: {
+                esp_rmaker_param_update_and_report(
+                    esp_rmaker_device_get_param_by_name(device, "Amps_phase_2"),
+                    esp_rmaker_float(value));
+            }
+            break;
+            case 2: {
+                esp_rmaker_param_update_and_report(
+                    esp_rmaker_device_get_param_by_name(device, "Amps_phase_3"),
+                    esp_rmaker_float(value));
+            }
+            break;
+            case 3: {
+                // Watts (most important param) is sent to the root parameter so that it
+                // shows nicely on the RainMaker mobile app(s) without opening the device properties.
+                esp_rmaker_param_update_and_report(
+                    esp_rmaker_device_get_param_by_name(device, "Power Meter"),
+                    esp_rmaker_float(value));
+            }
+            break;
+            case 4: {
+                esp_rmaker_param_update_and_report(
+                    esp_rmaker_device_get_param_by_name(device, "var"),
+                    esp_rmaker_float(value));
+            }
+            break;
+            case 5: {
+                esp_rmaker_param_update_and_report(
+                    esp_rmaker_device_get_param_by_name(device, "VA"),
+                    esp_rmaker_float(value));
+            }
+            break;
+            case 6: {
+                esp_rmaker_param_update_and_report(
+                    esp_rmaker_device_get_param_by_name(device, "Volts_phase_1"),
+                    esp_rmaker_float(value));
+            }
+            break;
+            case 7: {
+                esp_rmaker_param_update_and_report(
+                    esp_rmaker_device_get_param_by_name(device, "Volts_phase_2"),
+                    esp_rmaker_float(value));
+            }
+            break;
+            case 8: {
+                esp_rmaker_param_update_and_report(
+                    esp_rmaker_device_get_param_by_name(device, "Volts_phase_3"),
+                    esp_rmaker_float(value));
+            }
+            break;
+            case 9: {
+                esp_rmaker_param_update_and_report(
+                    esp_rmaker_device_get_param_by_name(device, "Power_Factor"),
+                    esp_rmaker_float(value));
+            }
+            break;
+            case 10: {
+                esp_rmaker_param_update_and_report(
+                    esp_rmaker_device_get_param_by_name(device, "Frequency"),
+                    esp_rmaker_float(value));
+            }
+            break;
+            case 11: {
+                esp_rmaker_param_update_and_report(
+                    esp_rmaker_device_get_param_by_name(device, "uh"),
+                    esp_rmaker_float(value));
+            }
+            break;
+            case 12: {
+                esp_rmaker_param_update_and_report(
+                    esp_rmaker_device_get_param_by_name(device, "-uh"),
+                    esp_rmaker_float(value));
+            }
+            break;
+            case 13: {
+                esp_rmaker_param_update_and_report(
+                    esp_rmaker_device_get_param_by_name(device, "uAh"),
+                    esp_rmaker_float(value));
+            }
+            break;
+            case 14: {
+                esp_rmaker_param_update_and_report(
+                    esp_rmaker_device_get_param_by_name(device, "-uAh"),
+                    esp_rmaker_float(value));
+            }
+            break;
+        default:
+            break;
         }
-        break;
-        case 1: {
-            esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(device, "Amps_phase_2"),
-                esp_rmaker_float(value));
-        }
-        break;
-        case 2: {
-            esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(device, "Amps_phase_3"),
-                esp_rmaker_float(value));
-        }
-        break;
-        case 3: {
-            // Watts (most important param) is sent to the root parameter so that it
-            // shows nicely on the RainMaker mobile app(s) without opening the device properties.
-            esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(device, "Power Meter"),
-                esp_rmaker_float(value));
-        }
-        break;
-        case 4: {
-            esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(device, "var"),
-                esp_rmaker_float(value));
-        }
-        break;
-        case 5: {
-            esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(device, "VA"),
-                esp_rmaker_float(value));
-        }
-        break;
-        case 6: {
-            esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(device, "Volts_phase_1"),
-                esp_rmaker_float(value));
-        }
-        break;
-        case 7: {
-            esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(device, "Volts_phase_2"),
-                esp_rmaker_float(value));
-        }
-        break;
-        case 8: {
-            esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(device, "Volts_phase_3"),
-                esp_rmaker_float(value));
-        }
-        break;
-        case 9: {
-            esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(device, "Power_Factor"),
-                esp_rmaker_float(value));
-        }
-        break;
-        case 10: {
-            esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(device, "Frequency"),
-                esp_rmaker_float(value));
-        }
-        break;
-        case 11: {
-            esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(device, "uh"),
-                esp_rmaker_float(value));
-        }
-        break;
-        case 12: {
-            esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(device, "-uh"),
-                esp_rmaker_float(value));
-        }
-        break;
-        case 13: {
-            esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(device, "uAh"),
-                esp_rmaker_float(value));
-        }
-        break;
-        case 14: {
-            esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(device, "-uAh"),
-                esp_rmaker_float(value));
-        }
-        break;
-    default:
-        break;
-    }
+    //}
+
+    // We are done reporting data to RMaker cloud, let's wait until more Modbus Data values are available...
+    xTaskNotifyGive(modbus_task);
 }
