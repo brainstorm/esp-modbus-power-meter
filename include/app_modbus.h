@@ -15,6 +15,6 @@ struct mb_reporting_unit_t {
     float value;
 };
 
-extern struct mb_reporting_unit_t mb_readings;
+extern struct mb_reporting_unit_t mb_readings[15];
 
 esp_err_t app_modbus_init();

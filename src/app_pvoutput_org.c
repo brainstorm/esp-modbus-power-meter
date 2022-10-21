@@ -18,13 +18,6 @@ static const char *TAG = "app_pvoutput";
 // extern const uint8_t server_root_cert_pem_end[]   asm("_binary_pvoutput_server_pem_end");
 
 char* g_pvoutput_query_string;
-extern float g_current_volts;
-extern float g_current_watts;
-
-// static const char REQUEST[] = "POST pvoutput.org HTTP/1.1\r\n"
-//                               "Host: pvoutput.org\r\n"
-//                               "User-Agent: esp-idf/1.0 esp32\r\n"
-//                               "\r\n";
 
 esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 {
@@ -88,22 +81,17 @@ void pvoutput_update()
 {
     char local_response_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0};
 
-    // Hack, hack, hack, use queues!!!
-    // Do not report to pvoutput if those two have not been touched yet, it'd skew the plots
-    if (g_current_volts == -0.1) return;
-    if (g_current_watts == -0.1) return;
-
     // Bail out early if SNTP is not set. Things will not work properly if system time is not set properly
     // i.e:
     // PVOutput does not allow status data submissions older than 14 days...
     // ... and 1970 happened a long time ago ;)
     if (esp_rmaker_time_check() != true) return;
 
-
+    // XXX: Find a better way for obscure Watts/Volts index in mb_readings
     g_pvoutput_query_string = build_pvoutput_query_string(get_pvoutput_fmt_date(),
                                                           get_pvoutput_fmt_time(),
-                                                          g_current_watts,  // Watts
-                                                          g_current_volts); // Volts
+                                                          mb_readings[3].value,  // Watts
+                                                          mb_readings[6].value); // Volts
 
     esp_http_client_config_t config = {
         .host = "pvoutput.org",
@@ -131,9 +119,10 @@ void pvoutput_update()
         #endif
                 esp_http_client_get_status_code(client),
                 esp_http_client_get_content_length(client));
-
-        xTaskNotifyGive(modbus_task);
     } else {
         ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
     }
+
+    // Done with reading modbus values and reporting them
+    xTaskNotifyGive(modbus_task);
 }

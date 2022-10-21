@@ -23,9 +23,6 @@
 
 static const char *TAG = "app_modbus";
 
-float g_current_volts = -0.1;
-float g_current_watts = -0.1;
-
 // Holding reg init
 holding_reg_params_t holding_reg_params = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -99,6 +96,8 @@ static void read_power_meter()
                         mb_readings[cid].key = param_descriptor->param_key;
                         mb_readings[cid].value = current_value;
                         mb_readings[cid].unit = param_descriptor->param_units;
+
+                        ESP_LOGI(TAG, "MB readings stored: for %s\n with value: %f\n", mb_readings[cid].key, mb_readings[cid].value);
                     }
                 } else {
                     ESP_LOGE(TAG, "Characteristic #%d (%s) read fail, err = 0x%x (%s).",
@@ -115,7 +114,7 @@ static void read_power_meter()
         // "FreeRTOS Stream and Message Buffers use the task notification at array index 0. 
         // If you want to maintain the state of a task notification across a call to a Stream 
         // or Message Buffer API function then use a task notification at an array index greater than 0."
-        
+
         xTaskNotifyWait(0, ULONG_MAX, NULL, portMAX_DELAY);
         //vTaskDelay(MB_REPORTING_PERIOD);
     }

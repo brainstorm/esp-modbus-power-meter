@@ -17,7 +17,8 @@ static const char *TAG = "app_main";
 
 // To pass around task notification/syncronization logic and read Modbus Data
 TaskHandle_t modbus_task;
-struct mb_reporting_unit_t mb_readings;
+extern const mb_parameter_descriptor_t device_parameters[];
+struct mb_reporting_unit_t mb_readings[15];
 
 void app_main(void)
 {
@@ -34,6 +35,6 @@ void app_main(void)
     app_rmaker_init();        /* Initialize all things ESP RainMaker Cloud and ESP Insights */
     #endif
     app_modbus_init();        /* Initialize the power meter */
-    //app_pvoutput_init();    /* PVoutput.org: initialize after RMaker (system clock (SNTP) set) */
+    app_pvoutput_init();    /* PVoutput.org: initialize after RMaker (system clock (SNTP) set) */
     //app_rgbled_init();
 }
