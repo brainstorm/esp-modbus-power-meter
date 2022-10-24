@@ -8,15 +8,16 @@
 
 #include "app_modbus.h"
 #include "app_rmaker.h"
+#include "app_rgbled.h"
 #include "app_pvoutput_org.h"
-
-#define MB_DATA_STATUS_BIT  BIT0    // 0: Data fetched, 1: Data pending
-#define RMAKER_STATUS_BIT   BIT1    // ...
 
 static const char *TAG = "app_main";
 
 // To pass around task notification/syncronization logic and read Modbus Data
 TaskHandle_t modbus_task;
+TaskHandle_t pvoutput_task;
+TaskHandle_t rainmaker_task;
+
 extern const mb_parameter_descriptor_t device_parameters[];
 struct mb_reporting_unit_t mb_readings[15];
 
@@ -32,9 +33,9 @@ void app_main(void)
     
     ESP_LOGI(TAG, "All systems go");
     #if CONFIG_RMAKER_SERVICE_ENABLE
-    app_rmaker_init();        /* Initialize all things ESP RainMaker Cloud and ESP Insights */
+    app_rmaker_init();      /* Initialize all things ESP RainMaker Cloud and ESP Insights */
     #endif
-    app_modbus_init();        /* Initialize the power meter */
+    app_modbus_init();      /* Initialize the power meter */
     app_pvoutput_init();    /* PVoutput.org: initialize after RMaker (system clock (SNTP) set) */
     //app_rgbled_init();
 }

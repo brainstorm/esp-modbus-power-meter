@@ -15,7 +15,8 @@
 //#include "cid_tables.h"
 
 //#define MB_REPORTING_PERIOD    60*1000*5/portTICK_PERIOD_MS /* Report every 5 minutes, to avoid rate limiting, especially on pvoutput.org */
-#define MB_REPORTING_PERIOD    60*1000*1/portTICK_PERIOD_MS /* Report every minute, to avoid rate limiting, especially on pvoutput.org */
+//#define MB_REPORTING_PERIOD    60*1000*1/portTICK_PERIOD_MS /* Report every minute, to avoid rate limiting, especially on pvoutput.org */
+#define MB_REPORTING_PERIOD      1000*10/portTICK_PERIOD_MS /* Report evert ten seconds, for debugging purposes */
 
 // Every second for debugging purposes
 //#define MB_REPORTING_PERIOD    1*1000/portTICK_PERIOD_MS
@@ -35,7 +36,7 @@
 
 // Timeout between polls
 #define POLL_TIMEOUT_MS                 (1)
-#define POLL_TIMEOUT_TICS               (POLL_TIMEOUT_MS / portTICK_PERIOD_MS)
+#define MB_POLL_TIME_TICS               (POLL_TIMEOUT_MS / portTICK_PERIOD_MS)
 
 // Newer ESP-IDF versions (>4.4) switch to MB_RETURN_ON_FALSE macro instead
 #define MASTER_CHECK(a, ret_val, str, ...) \

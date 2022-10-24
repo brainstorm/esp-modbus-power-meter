@@ -15,7 +15,14 @@ static uint16_t g_value = DEFAULT_BRIGHTNESS;
 
 static void app_rgbled_update()
 {
-    ws2812_led_set_hsv(DEFAULT_HUE, g_saturation, g_value);
+    // TODO: Do something more fancy here and perhaps related with modbus/status.
+    while (1) {
+        ws2812_led_set_hsv(DEFAULT_HUE, g_saturation, g_value);
+        g_hue++;
+        g_value++;
+        g_saturation++;
+        vTaskDelay(pdMS_TO_TICKS(50));
+    }
 }
 
 esp_err_t rgbled_init(void)
@@ -25,8 +32,9 @@ esp_err_t rgbled_init(void)
         return err;
     }
 
-    // TODO: Do something more fancy here and perhaps related with modbus/status.
     ws2812_led_set_hsv(g_hue, g_saturation, g_value);
+
+    xTaskCreate(app_rgbled_update, "rgbled_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
     return ESP_OK;
 }
 

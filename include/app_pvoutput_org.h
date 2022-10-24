@@ -13,5 +13,8 @@
 
 #include "esp_http_client.h"
 
+// To be able to send (task) notifications to modbus for syncronization
+extern TaskHandle_t pvoutput_task;
+
 void pvoutput_update();
-void app_pvoutput_init();
+int app_pvoutput_init();

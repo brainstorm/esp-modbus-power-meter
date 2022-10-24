@@ -1,3 +1,5 @@
+#include <esp_insights.h>
+
 #include "app_rmaker.h"
 #include "app_modbus.h"
 
@@ -192,5 +194,6 @@ void send_to_rmaker_cloud(uint16_t cid, float value, const esp_rmaker_device_t *
     //}
 
     // We are done reporting data to RMaker cloud, let's wait until more Modbus Data values are available...
+    ESP_LOGI(TAG, "Notifying modbus_task that we are done with ESP RainMaker data submission...\n");
     xTaskNotifyGive(modbus_task);
 }

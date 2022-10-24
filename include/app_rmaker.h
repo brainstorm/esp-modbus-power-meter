@@ -10,9 +10,11 @@
 #include <esp_rmaker_standard_params.h>
 #include <esp_rmaker_standard_devices.h>
 #include <esp_rmaker_ota.h>
-#include <esp_insights.h>
-#include <app_wifi.h>
 #include <app_insights.h>
+#include <app_wifi.h>
+
+// To be able to send (task) notifications to modbus for syncronization
+//extern TaskHandle_t rmaker_task;
 
 extern esp_rmaker_device_t *power_sensor_device;
 

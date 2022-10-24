@@ -54,7 +54,7 @@ static void* master_get_param_data(const mb_parameter_descriptor_t* param_descri
     return instance_ptr;
 }
 
-// Read power meter values over modbus, report to rainmaker
+// Read power meter values over modbus, this is a FreeRTOS task
 static void read_power_meter()
 {
     esp_err_t err = ESP_OK;
@@ -62,14 +62,14 @@ static void read_power_meter()
     const mb_parameter_descriptor_t* param_descriptor = NULL;
     
     struct mb_reporting_unit_t mb_readings[MASTER_MAX_CIDS];
-
+    
     while(1) {
         ESP_LOGI(TAG, "Reading modbus holding registers from power meter...");
 
         // Read all found characteristics from slave(s)
         for (uint16_t cid = 0; (err != ESP_ERR_NOT_FOUND) && cid < MASTER_MAX_CIDS; cid++)
         {
-            // XXX: After a batch of modbus queries is read, the consumers must flag thee
+            // XXX: After a batch of modbus queries is read, the consumers must flag the
             // data as fetched to avoid race conditions.
             //
             // There shall be a mechanism for timeouts though, since ModBus values cannot be
@@ -106,7 +106,7 @@ static void read_power_meter()
                                         (int)err,
                                         (char*)esp_err_to_name(err));
                 }
-                //vTaskDelay(POLL_TIMEOUT_TICS); // timeout between polls
+                //vTaskDelay(MB_POLL_TIME_TICS); // time between polls
             }
         }
         // We might want to use *Indexed methods to avoid index 0, which clash with Streaming in FreeRTOS
@@ -115,8 +115,11 @@ static void read_power_meter()
         // If you want to maintain the state of a task notification across a call to a Stream 
         // or Message Buffer API function then use a task notification at an array index greater than 0."
 
-        xTaskNotifyWait(0, ULONG_MAX, NULL, portMAX_DELAY);
-        //vTaskDelay(MB_REPORTING_PERIOD);
+        //xTaskNotifyWait(0, ULONG_MAX, NULL, portMAX_DELAY);
+        vTaskDelay(MB_REPORTING_PERIOD);
+
+        xTaskNotifyGive(pvoutput_task);
+        //xTaskNotifyGive(rainmaker_task)
     }
 }
 
