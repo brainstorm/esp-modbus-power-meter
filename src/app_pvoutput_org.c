@@ -1,3 +1,6 @@
+// RATE LIMIT ON API: 60 requests per hour.
+// https://pvoutput.org/help/api_specification.html#rate-limits
+
 #include <esp_rmaker_utils.h>
 
 #include <string.h>
@@ -76,11 +79,18 @@ void print_current_datetime() {
 
 int app_pvoutput_init() {
     //print_current_datetime();
-    xTaskCreate(pvoutput_update, "pvoutput_task", 8192, NULL, 5, &pvoutput_task);
+    xTaskCreate(pvoutput_update, "pvoutput_task", 16384, NULL, 5, &pvoutput_task);
     
     // The task above should never end, if it does, that's a fail :-!
     return ESP_FAIL;
 }
+
+// void sntp_set_time() {
+//     sntp_setoperatingmode(SNTP_OPMODE_POLL);
+//     sntp_setservername(0, "pt.pool.ntp.org");
+//     sntp_setservername(1, "pool.ntp.org");
+//     sntp_init();
+// }
 
 void pvoutput_update()
 {
@@ -127,7 +137,7 @@ void pvoutput_update()
         esp_http_client_set_header(client, "X-Pvoutput-Apikey", CONFIG_PVOUTPUT_ORG_API_KEY);
         esp_http_client_set_header(client, "X-Pvoutput-SystemId", CONFIG_PVOUTPUT_ORG_SYSTEM_ID);
 
-        ESP_LOGI(TAG, "Sending power data to: https://%s%s%s", config.host, config.path, g_pvoutput_query_string);
+        ESP_LOGI(TAG, "Sending power data to: https://%s%s%s", config.host, config.path, local_pvoutput_query_string);
         // XXX: Re-enable when I'm sure rate limiting is right
         //esp_err_t err = esp_http_client_perform(client);
         // if (err == ESP_OK) {
