@@ -91,6 +91,7 @@ void create_rmaker_secondary_parameters(esp_rmaker_device_t *device){
     esp_rmaker_device_add_param(device, esp_rmaker_power_meter_param_create("-uAh", 0.0));
 }
 
+// XXX: Needs refactoring and wrapping into a task, effectively disabled until then.
 /* Sends parameters collected on the ModBus table towards rainmaker cloud */
 void send_to_rmaker_cloud(uint16_t cid, float value, const esp_rmaker_device_t *device) {
     //    for (uint8_t cid = 0; *mb_readings[cid].cid; cid++) {

@@ -66,14 +66,14 @@ several power meters supported**
 
 1. Review your own power meter's manual and find the register(s) listing.
 1. Submit a pullrequest with a CID table for your meter (**see include/cid_tables.h**)
+1. Small and sweet [code reviews and pull requests](https://github.com/brainstorm/esp-modbus-power-meter/pull/2).
 
 ## 🌀 Random notes
 
 There are a few vague, vestigial references online about this power meter:
 
 1. There's a [youtube][youtube_usage] video showing the default setup
-password and some basic usage/configuration as well as a full teardown.
-video][yigedianqi_teardown] 
+password and some basic usage/configuration as well as a full [teardown video][yigedianqi_teardown]
 1. A possible company spinoff, [from yiGedianqi to yiHedianqi][possible_company_spinoff]?
 1. Several [Amazon customers rating this meter][amazon_power_meter_ratings] and pointing out that it only comes with a chinese manual (true story).
 1. [A similar project, including Grafana, RPi and other power meters supported.][guillermo_electrico]
