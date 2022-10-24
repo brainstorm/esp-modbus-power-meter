@@ -20,8 +20,6 @@ static const char *TAG = "app_pvoutput";
 // extern const uint8_t server_root_cert_pem_start[] asm("_binary_pvoutput_server_pem_start");
 // extern const uint8_t server_root_cert_pem_end[]   asm("_binary_pvoutput_server_pem_end");
 
-char* g_pvoutput_query_string;
-
 esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 {
     switch(evt->event_id) {
@@ -58,22 +56,19 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
-char* build_pvoutput_query_string(char* date, char* time, float watts, float volts) {
-   char dst[PVOUTPUT_ADD_STATUS_STR_MAX_LEN]; // i.e: addstatus.jsp?d=20220328&t=21:56&v2=1&v6=230
+void build_pvoutput_query_string(char *buffer, char* date, char* time, float watts, float volts) {
+   
+   // i.e: addstatus.jsp?d=20220328&t=21:56&v2=1&v6=230
 
-   snprintf(dst,
+   snprintf(buffer,
             PVOUTPUT_ADD_STATUS_STR_MAX_LEN,
             "d=%s&t=%s&v2=%f&v6=%f",
             date,
             time,
             watts, 
             volts);
-
-   char* query_str = calloc(1, PVOUTPUT_ADD_STATUS_STR_MAX_LEN);
-   strncpy(query_str, dst, PVOUTPUT_ADD_STATUS_STR_MAX_LEN);
-
-   return query_str;
 }
+
 void print_current_datetime() {
     ESP_LOGI(TAG, "Current date is: %s", get_pvoutput_fmt_date()); 
     ESP_LOGI(TAG, "Current time is: %s", get_pvoutput_fmt_time());
@@ -90,6 +85,8 @@ int app_pvoutput_init() {
 void pvoutput_update()
 {
     char local_response_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0};
+    char local_pvoutput_query_string[PVOUTPUT_ADD_STATUS_STR_MAX_LEN];
+    
     uint32_t ulNotifiedValue;
 
     while(1) {
@@ -107,16 +104,17 @@ void pvoutput_update()
         xTaskNotifyWait(0, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
 
         // XXX: Find a better way for obscure Watts/Volts index in mb_readings
-        g_pvoutput_query_string = build_pvoutput_query_string(get_pvoutput_fmt_date(),
-                                                            get_pvoutput_fmt_time(),
-                                                            mb_readings[3].value,  // Watts
-                                                            mb_readings[6].value); // Volts
+        build_pvoutput_query_string( local_pvoutput_query_string,
+                                     get_pvoutput_fmt_date(),
+                                     get_pvoutput_fmt_time(),
+                                     mb_readings[3].value,  // Watts
+                                     mb_readings[6].value); // Volts
 
         esp_http_client_config_t config = {
             .host = "pvoutput.org",
             .path = "/service/r2/addstatus.jsp",
             .method = HTTP_METHOD_POST,
-            .query = g_pvoutput_query_string,
+            .query = local_pvoutput_query_string,
             .event_handler = _http_event_handler,
             .user_data = local_response_buffer,        // Pass address of local buffer to get response
             .disable_auto_redirect = true,
