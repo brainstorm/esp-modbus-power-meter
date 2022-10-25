@@ -97,7 +97,15 @@ static void read_power_meter()
                         mb_readings[cid].value = current_value;
                         mb_readings[cid].unit = param_descriptor->param_units;
 
-                        ESP_LOGI(TAG, "MB readings stored: for %s\n with value: %f\n", mb_readings[cid].key, mb_readings[cid].value);
+                        // XXX: Remove global var hack in favor of good, dynamically allocated VLA solution above...
+                        // Is it possible to statically allocate?
+                        if(cid == 3) {                            
+                            g_watts = current_value;
+                        } else if (cid == 6) {
+                            g_volts = current_value;
+                        }
+
+                        ESP_LOGI(TAG, "MB readings stored: for %s with value: %f\n", mb_readings[cid].key, mb_readings[cid].value);
                     }
                 } else {
                     ESP_LOGE(TAG, "Characteristic #%d (%s) read fail, err = 0x%x (%s).",
@@ -106,7 +114,6 @@ static void read_power_meter()
                                         (int)err,
                                         (char*)esp_err_to_name(err));
                 }
-                //vTaskDelay(MB_POLL_TIME_TICS); // time between polls
             }
         }
         // We might want to use *Indexed methods to avoid index 0, which clash with Streaming in FreeRTOS
@@ -114,12 +121,9 @@ static void read_power_meter()
         // "FreeRTOS Stream and Message Buffers use the task notification at array index 0. 
         // If you want to maintain the state of a task notification across a call to a Stream 
         // or Message Buffer API function then use a task notification at an array index greater than 0."
-
-        //xTaskNotifyWait(0, ULONG_MAX, NULL, portMAX_DELAY);
-        vTaskDelay(MB_REPORTING_PERIOD);
-
         xTaskNotifyGive(pvoutput_task);
-        //xTaskNotifyGive(rainmaker_task)
+        
+        vTaskDelay(MB_REPORTING_PERIOD);
     }
 }
 

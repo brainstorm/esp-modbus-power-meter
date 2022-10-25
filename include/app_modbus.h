@@ -17,4 +17,8 @@ struct mb_reporting_unit_t {
 
 extern struct mb_reporting_unit_t mb_readings[15];
 
+// XXX: Hack hack hack
+extern float g_watts;
+extern float g_volts;
+
 esp_err_t app_modbus_init();

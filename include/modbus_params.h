@@ -12,14 +12,13 @@
  *====================================================================================*/
 #pragma once
 
-//#include "cid_tables.h"
-
+// TODO: Prod/debug via sdkconfig
+// Production settings
 #define MB_REPORTING_PERIOD    60*1000*5/portTICK_PERIOD_MS /* Report every 5 minutes, to avoid rate limiting, especially on pvoutput.org */
-//#define MB_REPORTING_PERIOD    60*1000*1/portTICK_PERIOD_MS /* Report every minute, to avoid rate limiting, especially on pvoutput.org */
-//#define MB_REPORTING_PERIOD      1000*10/portTICK_PERIOD_MS /* Report evert ten seconds, for debugging purposes */
 
-// Every second for debugging purposes
-//#define MB_REPORTING_PERIOD    1*1000/portTICK_PERIOD_MS
+// Debug settings
+// #define MB_REPORTING_PERIOD    60*1000*1/portTICK_PERIOD_MS /* Report every minute, to avoid rate limiting, especially on pvoutput.org */
+// #define MB_REPORTING_PERIOD      1000*2/portTICK_PERIOD_MS /* Report every two seconds, for debugging purposes */
 
 // Tweaked via idf.py menuconfig
 #define MB_UART_RXD         (CONFIG_MB_UART_RXD)

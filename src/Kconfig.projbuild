@@ -3,11 +3,14 @@ menu "Modbus Power Meter settings"
         prompt "Power meter make and model"
         help
             "Selects the power meter model. Please report back if UNTESTED meter works!"
-        default POWER_METER_MODEL_YG899E_S9Y
+        default POWER_METER_MODEL_YG899E_9SY_2017
 
-        config POWER_METER_MODEL_YG899E_S9Y
-            bool "Yigedianqi YG899E_S9Y"
-        
+        config POWER_METER_MODEL_YG899E_9SY_2017
+            bool "Yigedianqi YG899E_9SY_2017"
+
+        config POWER_METER_MODEL_YG899E_9SY_2018
+            bool "Yigedianqi YG899E_9SY_2018"
+
         config POWER_METER_MODEL_YG912_S9Y
             bool "Yigedianqi YG912_S9Y (UNTESTED)"
 

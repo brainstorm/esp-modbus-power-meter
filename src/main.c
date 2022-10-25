@@ -21,6 +21,10 @@ TaskHandle_t rainmaker_task;
 extern const mb_parameter_descriptor_t device_parameters[];
 struct mb_reporting_unit_t mb_readings[15];
 
+// XXX: Hack hack hack
+float g_watts = -1.0;
+float g_volts = -1.0;
+
 void app_main(void)
 {
     /* Initialize NVS, useful for WiFi calibration, time keeping among other systems */

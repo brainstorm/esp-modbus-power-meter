@@ -20,9 +20,6 @@ static const char *TAG = "app_pvoutput";
 
 #define PVOUTPUT_ADD_STATUS_STR_MAX_LEN 60
 
-// extern const uint8_t server_root_cert_pem_start[] asm("_binary_pvoutput_server_pem_start");
-// extern const uint8_t server_root_cert_pem_end[]   asm("_binary_pvoutput_server_pem_end");
-
 esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 {
     switch(evt->event_id) {
@@ -98,27 +95,30 @@ void pvoutput_update()
     char local_pvoutput_query_string[PVOUTPUT_ADD_STATUS_STR_MAX_LEN];
     
     uint32_t ulNotifiedValue;
+    float volts; // Single phase reading as each of three phases is equal
+    float watts;
 
     while(1) {
         // Block here if SNTP is not set. Things will not work properly if system time is not set properly
         // i.e:
         // PVOutput does not allow status data submissions older than 14 days...
         // ... and 1970 happened a long time ago ;)
-
-        while (esp_rmaker_time_check() != true) {
-            esp_rmaker_time_wait_for_sync(pdMS_TO_TICKS(10000));
-            //print_current_datetime();
-            vTaskDelay(pdMS_TO_TICKS(1000)); 
-        }
+        esp_rmaker_time_wait_for_sync(pdMS_TO_TICKS(10000));
 
         xTaskNotifyWait(0, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
 
-        // XXX: Find a better way for obscure Watts/Volts index in mb_readings
+        // XXX: Find a better way to generalise obscure Watts/Volts index in mb_readings
+        // across power meter readers
+        // watts = mb_readings[4].value;
+        // volts = mb_readings[6].value;
+        watts = g_watts;
+        volts = g_volts;
+
         build_pvoutput_query_string( local_pvoutput_query_string,
                                      get_pvoutput_fmt_date(),
                                      get_pvoutput_fmt_time(),
-                                     mb_readings[3].value,  // Watts
-                                     mb_readings[6].value); // Volts
+                                     watts,
+                                     volts);
 
         esp_http_client_config_t config = {
             .host = "pvoutput.org",
@@ -138,7 +138,7 @@ void pvoutput_update()
         esp_http_client_set_header(client, "X-Pvoutput-SystemId", CONFIG_PVOUTPUT_ORG_SYSTEM_ID);
 
         ESP_LOGI(TAG, "Sending power data to: https://%s%s%s", config.host, config.path, local_pvoutput_query_string);
-        // XXX: Re-enable when I'm sure rate limiting is right
+        // XXX: ifdef this for prod/dev purposes...
         esp_err_t err = esp_http_client_perform(client);
         if (err == ESP_OK) {
             #if ESP_IDF_VERSION_MAJOR >= 5
