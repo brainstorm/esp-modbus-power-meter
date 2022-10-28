@@ -11,14 +11,13 @@
  *   your application. Below is just an example of possible parameters.
  *====================================================================================*/
 #pragma once
+#include <sdkconfig.h>
 
-// TODO: Prod/debug via sdkconfig
-// Production settings
-#define MB_REPORTING_PERIOD    60*1000*5/portTICK_PERIOD_MS /* Report every 5 minutes, to avoid rate limiting, especially on pvoutput.org */
-
-// Debug settings
-// #define MB_REPORTING_PERIOD    60*1000*1/portTICK_PERIOD_MS /* Report every minute, to avoid rate limiting, especially on pvoutput.org */
-// #define MB_REPORTING_PERIOD      1000*2/portTICK_PERIOD_MS /* Report every two seconds, for debugging purposes */
+#if CONFIG_PROD_MODE
+    #define MB_REPORTING_PERIOD    60*1000*5/portTICK_PERIOD_MS /* Report every 5 minutes, to avoid rate limiting, especially on pvoutput.org */
+#elif CONFIG_DEV_MODE
+    #define MB_REPORTING_PERIOD      1000*2/portTICK_PERIOD_MS /* Report every two seconds, for debugging purposes */
+#endif
 
 // Tweaked via idf.py menuconfig
 #define MB_UART_RXD         (CONFIG_MB_UART_RXD)

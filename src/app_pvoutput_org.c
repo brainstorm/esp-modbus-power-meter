@@ -75,7 +75,12 @@ void print_current_datetime() {
 }
 
 int app_pvoutput_init() {
-    //print_current_datetime();
+    // Block here if SNTP is not set. Things will not work properly if system time is not set properly
+    // i.e:
+    // PVOutput does not allow status data submissions older than 14 days...
+    // ... and 1970 happened a long time ago ;)
+    esp_rmaker_time_wait_for_sync(pdMS_TO_TICKS(10000));
+
     xTaskCreate(pvoutput_update, "pvoutput_task", 16384, NULL, 5, &pvoutput_task);
     
     // The task above should never end, if it does, that's a fail :-!
@@ -99,11 +104,6 @@ void pvoutput_update()
     float watts;
 
     while(1) {
-        // Block here if SNTP is not set. Things will not work properly if system time is not set properly
-        // i.e:
-        // PVOutput does not allow status data submissions older than 14 days...
-        // ... and 1970 happened a long time ago ;)
-        esp_rmaker_time_wait_for_sync(pdMS_TO_TICKS(10000));
 
         xTaskNotifyWait(0, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
 
@@ -138,20 +138,22 @@ void pvoutput_update()
         esp_http_client_set_header(client, "X-Pvoutput-SystemId", CONFIG_PVOUTPUT_ORG_SYSTEM_ID);
 
         ESP_LOGI(TAG, "Sending power data to: https://%s%s%s", config.host, config.path, local_pvoutput_query_string);
-        // XXX: ifdef this for prod/dev purposes...
-        esp_err_t err = esp_http_client_perform(client);
-        if (err == ESP_OK) {
-            #if ESP_IDF_VERSION_MAJOR >= 5
-            ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %"PRIx64"",
-            #else
-            ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %x",
-            #endif
-                    esp_http_client_get_status_code(client),
-                    esp_http_client_get_content_length(client));
-        } else {
-            ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
-        }
+        #if CONFIG_PROD_MODE
+            esp_err_t err = esp_http_client_perform(client);
+            if (err == ESP_OK) {
+                #if ESP_IDF_VERSION_MAJOR >= 5
+                ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %"PRIx64"",
+                #else
+                ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %x",
+                #endif
+                        esp_http_client_get_status_code(client),
+                        esp_http_client_get_content_length(client));
+            } else {
+                ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
+            }
+        #endif
 
+        // Cleanup, otherwise after ~8 open & dead connections we exhaust memory.
         esp_http_client_cleanup(client);
 
         // Done with reading modbus values and reporting them

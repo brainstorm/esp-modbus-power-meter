@@ -22,16 +22,16 @@ menu "Modbus Power Meter settings"
 
         config POWER_METER_MODEL_PAC3100
             bool "PAC3100 (UNTESTED)"
-        
+
         config POWER_METER_MODEL_PZEM_016
             bool "PZEM-016 (UNTESTED)"
-        
+
         config POWER_METER_MODEL_SDM120
             bool "SDM120 (UNTESTED)"
 
         config POWER_METER_MODEL_SDM220
             bool "SDM220 (UNTESTED)"
-        
+
         config POWER_METER_MODEL_SDM630
             bool "SDM630 (UNTESTED)"
 
@@ -56,15 +56,15 @@ menu "Modbus Power Meter settings"
 
     config PVOUTPUT_ORG_API_KEY
         string "PVOutput.org API Key"
-	default "<API KEY HERE>"
+        default "<API KEY HERE>"
         help
             PVOutput.org programmatic API Key used to report current
-	    power, voltage, etc...
+            power, voltage, etc...
     config PVOUTPUT_ORG_SYSTEM_ID
         string "PVoutput.org System Id"
-	default "<SYSTEM_ID_HERE>"
-	help
-	    PVOutput.org specific system id (solar panels) we are monitoring
+        default "<SYSTEM_ID_HERE>"
+        help
+            PVOutput.org specific system id (solar panels) we are monitoring
     config MB_UART_PORT_NUM
         int "UART port number"
         range 0 2 if IDF_TARGET_ESP32 || IDF_TARGET_ESP32S3
@@ -74,10 +74,26 @@ menu "Modbus Power Meter settings"
         help
             UART communication port number for Modbus.
 
+    choice DEV_PROD_MODE
+        prompt "Development/production switch"
+        default DEV_MODE
+        help
+            Avoids unnecessary/wrong calls to third party APIs while developing
+            and shortening wait times for (stress) testing purposes.
+            **or**
+            Set the device to production for the real deal
+
+        config DEV_MODE
+            bool "Development mode"
+
+        config PROD_MODE
+            bool "Production mode"
+
+    endchoice
     config MB_UART_BAUD_RATE
         int "UART communication speed"
         range 1200 115200
-        default 9600 
+        default 9600
         help
             UART communication speed for Modbus.
 
