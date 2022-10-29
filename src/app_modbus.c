@@ -20,6 +20,7 @@
 #include "app_rmaker.h"
 #include "app_pvoutput_org.h"
 #include "cid_tables.h"
+#include "modbus_params.h"
 
 static const char *TAG = "app_modbus";
 
@@ -64,66 +65,73 @@ static void read_power_meter()
     struct mb_reporting_unit_t mb_readings[MASTER_MAX_CIDS];
     
     while(1) {
-        ESP_LOGI(TAG, "Reading modbus holding registers from power meter...");
+        if (ulTaskNotifyTake(pdFALSE, portMAX_DELAY) == pdPASS) {
+            ESP_LOGI(TAG, "Reading modbus holding registers from power meter...");
 
-        // Read all found characteristics from slave(s)
-        for (uint16_t cid = 0; (err != ESP_ERR_NOT_FOUND) && cid < MASTER_MAX_CIDS; cid++)
-        {
-            // XXX: After a batch of modbus queries is read, the consumers must flag the
-            // data as fetched to avoid race conditions.
-            //
-            // There shall be a mechanism for timeouts though, since ModBus values cannot be
-            // stale just because there's a loss of connectivity or some cloud provider is down
-            err = mbc_master_get_cid_info(cid, &param_descriptor);
-            if ((err != ESP_ERR_NOT_FOUND) && (param_descriptor != NULL)) {
-                void* temp_data_ptr = master_get_param_data(param_descriptor);
-                assert(temp_data_ptr);
-                uint8_t type = 0;
+            // Read all found characteristics from slave(s)
+            for (uint16_t cid = 0; (err != ESP_ERR_NOT_FOUND) && cid < MASTER_MAX_CIDS; cid++)
+            {
+                // XXX: After a batch of modbus queries is read, the consumers must flag the
+                // data as fetched to avoid race conditions.
+                //
+                // There shall be a mechanism for timeouts though, since ModBus values cannot be
+                // stale just because there's a loss of connectivity or some cloud provider is down
+                err = mbc_master_get_cid_info(cid, &param_descriptor);
+                if ((err != ESP_ERR_NOT_FOUND) && (param_descriptor != NULL)) {
+                    void* temp_data_ptr = master_get_param_data(param_descriptor);
+                    assert(temp_data_ptr);
+                    uint8_t type = 0;
 
-                err = mbc_master_get_parameter(cid, (char*)param_descriptor->param_key,
-                                                    (uint8_t*)&current_value, &type);
-                if (err == ESP_OK) {
-                    *(float*)temp_data_ptr = current_value;
-                    if (param_descriptor->mb_param_type == MB_PARAM_HOLDING) {
-                        ESP_LOGI(TAG, "Characteristic #%d %s (%s) value = %lf (0x%"PRIu32") read successful.",
-                                        param_descriptor->cid,
-                                        (char*)param_descriptor->param_key,
-                                        (char*)param_descriptor->param_units,
-                                        current_value,
-                                        *(uint32_t*)temp_data_ptr);
+                    err = mbc_master_get_parameter(cid, (char*)param_descriptor->param_key,
+                                                        (uint8_t*)&current_value, &type);
+                    if (err == ESP_OK) {
+                        *(float*)temp_data_ptr = current_value;
+                        if (param_descriptor->mb_param_type == MB_PARAM_HOLDING) {
+                            ESP_LOGI(TAG, "Characteristic #%d %s (%s) value = %lf (0x%"PRIu32") read successful.",
+                                            param_descriptor->cid,
+                                            (char*)param_descriptor->param_key,
+                                            (char*)param_descriptor->param_units,
+                                            current_value,
+                                            *(uint32_t*)temp_data_ptr);
 
-                        // Add the informative triplets to the array, ready to report/send
-                        mb_readings[cid].key = param_descriptor->param_key;
-                        mb_readings[cid].value = current_value;
-                        mb_readings[cid].unit = param_descriptor->param_units;
+                            // Add the informative triplets to the array, ready to report/send
+                            mb_readings[cid].key = param_descriptor->param_key;
+                            mb_readings[cid].value = current_value;
+                            mb_readings[cid].unit = param_descriptor->param_units;
 
-                        // XXX: Remove global var hack in favor of good, dynamically allocated VLA solution above...
-                        // Is it possible to statically allocate?
-                        if(cid == 3) {                            
-                            g_watts = current_value;
-                        } else if (cid == 6) {
-                            g_volts = current_value;
+                            // XXX: Remove global var hack in favor of good, dynamically allocated VLA solution above...
+                            // Is it possible to statically allocate?
+                            if(cid == 3) {                            
+                                g_watts = current_value;
+                            } else if (cid == 6) {
+                                g_volts = current_value;
+                            }
+
+                            ESP_LOGI(TAG, "MB readings stored: for %s with value: %f\n", mb_readings[cid].key, mb_readings[cid].value);
                         }
-
-                        ESP_LOGI(TAG, "MB readings stored: for %s with value: %f\n", mb_readings[cid].key, mb_readings[cid].value);
+                    } else {
+                        ESP_LOGE(TAG, "Characteristic #%d (%s) read fail, err = 0x%x (%s).",
+                                            param_descriptor->cid,
+                                            (char*)param_descriptor->param_key,
+                                            (int)err,
+                                            (char*)esp_err_to_name(err));
                     }
-                } else {
-                    ESP_LOGE(TAG, "Characteristic #%d (%s) read fail, err = 0x%x (%s).",
-                                        param_descriptor->cid,
-                                        (char*)param_descriptor->param_key,
-                                        (int)err,
-                                        (char*)esp_err_to_name(err));
                 }
             }
+
+            ESP_LOGI(TAG, "Notifying pvoutput_task that we are done with reading modbus values...\n");
+            xTaskNotifyGive(pvoutput_task);
+
+            // if (pvoutput_task != NULL) {
+            //     xTaskNotify(pvoutput_task, ULONG_MAX, eSetValueWithOverwrite);
+            // } else {
+            //     printf("NULL pointer\n");
+            //     fflush(stdout);
+            // }
+            vTaskDelay(MB_REPORTING_PERIOD);
+        } else {
+            ESP_LOGI(TAG, "Modbus task oops... I should be handling errors here\n");
         }
-        // We might want to use *Indexed methods to avoid index 0, which clash with Streaming in FreeRTOS
-        // 
-        // "FreeRTOS Stream and Message Buffers use the task notification at array index 0. 
-        // If you want to maintain the state of a task notification across a call to a Stream 
-        // or Message Buffer API function then use a task notification at an array index greater than 0."
-        xTaskNotifyGive(pvoutput_task);
-        
-        vTaskDelay(MB_REPORTING_PERIOD);
     }
 }
 
@@ -182,7 +190,7 @@ esp_err_t app_modbus_init()
 {
     mb_master_init();
 
-    xTaskCreate(read_power_meter, "modbus_task", 16384, NULL, 5, &modbus_task);
+    xTaskCreate(read_power_meter, "modbus_task", 4096, NULL, 5, &modbus_task);
 
     // The task above should never end, if it does, that's a fail :-!
     return ESP_FAIL;

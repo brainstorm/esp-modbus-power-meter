@@ -99,65 +99,76 @@ void pvoutput_update()
     char local_response_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0};
     char local_pvoutput_query_string[PVOUTPUT_ADD_STATUS_STR_MAX_LEN];
     
-    uint32_t ulNotifiedValue;
+    //uint32_t ulNotifiedValue;
     float volts; // Single phase reading as each of three phases is equal
     float watts;
 
     while(1) {
+        //xTaskNotifyWait(0, ULONG_MAX, &ulNotifiedValue, pdMS_TO_TICKS(1000*60*2));
+        ESP_LOGI(TAG, "PVoutput task waits for data to be produced...\n");
+        if (ulTaskNotifyTake(pdFALSE, portMAX_DELAY) == pdPASS) {
+            ESP_LOGI(TAG, "PVoutput task wakes up...\n");
+            // XXX: Find a better way to generalise obscure Watts/Volts index in mb_readings
+            // across power meter readers
+            // watts = mb_readings[4].value;
+            // volts = mb_readings[6].value;
+            watts = g_watts;
+            volts = g_volts;
 
-        xTaskNotifyWait(0, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY);
+            build_pvoutput_query_string( local_pvoutput_query_string,
+                                        get_pvoutput_fmt_date(),
+                                        get_pvoutput_fmt_time(),
+                                        watts,
+                                        volts);
 
-        // XXX: Find a better way to generalise obscure Watts/Volts index in mb_readings
-        // across power meter readers
-        // watts = mb_readings[4].value;
-        // volts = mb_readings[6].value;
-        watts = g_watts;
-        volts = g_volts;
+            esp_http_client_config_t config = {
+                .host = "pvoutput.org",
+                .path = "/service/r2/addstatus.jsp",
+                .method = HTTP_METHOD_POST,
+                .query = local_pvoutput_query_string,
+                .event_handler = _http_event_handler,
+                .user_data = local_response_buffer,        // Pass address of local buffer to get response
+                .disable_auto_redirect = true,
+                //.use_global_ca_store = true,
+            };
+            esp_http_client_handle_t client = esp_http_client_init(&config);
 
-        build_pvoutput_query_string( local_pvoutput_query_string,
-                                     get_pvoutput_fmt_date(),
-                                     get_pvoutput_fmt_time(),
-                                     watts,
-                                     volts);
+            esp_http_client_set_header(client, "Content-Type", "application/json");
+            // XXX: Do not setup key if it starts with "<" (not setup)
+            esp_http_client_set_header(client, "X-Pvoutput-Apikey", CONFIG_PVOUTPUT_ORG_API_KEY);
+            esp_http_client_set_header(client, "X-Pvoutput-SystemId", CONFIG_PVOUTPUT_ORG_SYSTEM_ID);
 
-        esp_http_client_config_t config = {
-            .host = "pvoutput.org",
-            .path = "/service/r2/addstatus.jsp",
-            .method = HTTP_METHOD_POST,
-            .query = local_pvoutput_query_string,
-            .event_handler = _http_event_handler,
-            .user_data = local_response_buffer,        // Pass address of local buffer to get response
-            .disable_auto_redirect = true,
-            //.use_global_ca_store = true,
-        };
-        esp_http_client_handle_t client = esp_http_client_init(&config);
+            ESP_LOGI(TAG, "Sending power data to: https://%s%s%s", config.host, config.path, local_pvoutput_query_string);
+            #if CONFIG_PROD_MODE
+                esp_err_t err = esp_http_client_perform(client);
+                if (err == ESP_OK) {
+                    #if ESP_IDF_VERSION_MAJOR >= 5
+                    ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %"PRIx64"",
+                    #else
+                    ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %x",
+                    #endif
+                            esp_http_client_get_status_code(client),
+                            esp_http_client_get_content_length(client));
+                } else {
+                    ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
+                }
+            #endif
 
-        esp_http_client_set_header(client, "Content-Type", "application/json");
-        // XXX: Do not setup key if it starts with "<" (not setup)
-        esp_http_client_set_header(client, "X-Pvoutput-Apikey", CONFIG_PVOUTPUT_ORG_API_KEY);
-        esp_http_client_set_header(client, "X-Pvoutput-SystemId", CONFIG_PVOUTPUT_ORG_SYSTEM_ID);
+            // Cleanup, otherwise after ~8 open & dead connections we exhaust memory.
+            esp_http_client_cleanup(client);
 
-        ESP_LOGI(TAG, "Sending power data to: https://%s%s%s", config.host, config.path, local_pvoutput_query_string);
-        #if CONFIG_PROD_MODE
-            esp_err_t err = esp_http_client_perform(client);
-            if (err == ESP_OK) {
-                #if ESP_IDF_VERSION_MAJOR >= 5
-                ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %"PRIx64"",
-                #else
-                ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %x",
-                #endif
-                        esp_http_client_get_status_code(client),
-                        esp_http_client_get_content_length(client));
-            } else {
-                ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
-            }
-        #endif
+            // Done with reading modbus values and reporting them
+            //ESP_LOGI(TAG, "Notifying modbus_task that we are done with one pvoutput data submission...\n");
+            xTaskNotifyGive(modbus_task);
 
-        // Cleanup, otherwise after ~8 open & dead connections we exhaust memory.
-        esp_http_client_cleanup(client);
-
-        // Done with reading modbus values and reporting them
-        ESP_LOGI(TAG, "Notifying modbus_task that we are done with one pvoutput data submission...\n");
-        xTaskNotifyGive(modbus_task);
+            // if (modbus_task != NULL) {
+            //     xTaskNotify(modbus_task, 0, eSetValueWithoutOverwrite);
+            // } else {
+            //     printf("NULL pointer\n");
+            //     fflush(stdout);
+            // }
+        } else {
+            ESP_LOGI(TAG, "PVOutput oops... I should be handling errors here\n");
+        }
     }
 }

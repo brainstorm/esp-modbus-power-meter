@@ -14,9 +14,9 @@
 static const char *TAG = "app_main";
 
 // To pass around task notification/syncronization logic and read Modbus Data
-TaskHandle_t modbus_task;
-TaskHandle_t pvoutput_task;
-TaskHandle_t rainmaker_task;
+TaskHandle_t modbus_task = NULL;
+TaskHandle_t pvoutput_task = NULL;
+TaskHandle_t rainmaker_task = NULL;
 
 extern const mb_parameter_descriptor_t device_parameters[];
 struct mb_reporting_unit_t mb_readings[15];
@@ -39,7 +39,7 @@ void app_main(void)
     #if CONFIG_RMAKER_SERVICE_ENABLE
     app_rmaker_init();      /* Initialize all things ESP RainMaker Cloud and ESP Insights */
     #endif
-    app_modbus_init();      /* Initialize the power meter */
     app_pvoutput_init();    /* PVoutput.org: initialize after RMaker (system clock (SNTP) set) */
+    app_modbus_init();      /* Initialize the power meter */
     //app_rgbled_init();
 }
