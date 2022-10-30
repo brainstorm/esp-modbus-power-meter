@@ -79,7 +79,9 @@ int app_pvoutput_init() {
     // i.e:
     // PVOutput does not allow status data submissions older than 14 days...
     // ... and 1970 happened a long time ago ;)
-    esp_rmaker_time_wait_for_sync(pdMS_TO_TICKS(10000));
+    //
+    // Wait forever because we don't have good timeseries without time sync
+    esp_rmaker_time_wait_for_sync(portMAX_DELAY);
 
     xTaskCreate(pvoutput_update, "pvoutput_task", 16384, NULL, 5, &pvoutput_task);
     
@@ -106,7 +108,7 @@ void pvoutput_update()
     while(1) {
         //xTaskNotifyWait(0, ULONG_MAX, &ulNotifiedValue, pdMS_TO_TICKS(1000*60*2));
         ESP_LOGI(TAG, "PVoutput task waits for data to be produced...\n");
-        if (ulTaskNotifyTake(pdFALSE, portMAX_DELAY) == pdPASS) {
+        if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY) == pdPASS) {
             ESP_LOGI(TAG, "PVoutput task wakes up...\n");
             // XXX: Find a better way to generalise obscure Watts/Volts index in mb_readings
             // across power meter readers

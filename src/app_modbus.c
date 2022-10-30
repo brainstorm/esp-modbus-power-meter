@@ -65,7 +65,6 @@ static void read_power_meter()
     struct mb_reporting_unit_t mb_readings[MASTER_MAX_CIDS];
     
     while(1) {
-        if (ulTaskNotifyTake(pdFALSE, portMAX_DELAY) == pdPASS) {
             ESP_LOGI(TAG, "Reading modbus holding registers from power meter...");
 
             // Read all found characteristics from slave(s)
@@ -116,22 +115,14 @@ static void read_power_meter()
                                             (int)err,
                                             (char*)esp_err_to_name(err));
                     }
+                    vTaskDelay(1000/portTICK_PERIOD_MS); // XXX: Avoids modbus query parameter timeouts
                 }
             }
 
             ESP_LOGI(TAG, "Notifying pvoutput_task that we are done with reading modbus values...\n");
             xTaskNotifyGive(pvoutput_task);
 
-            // if (pvoutput_task != NULL) {
-            //     xTaskNotify(pvoutput_task, ULONG_MAX, eSetValueWithOverwrite);
-            // } else {
-            //     printf("NULL pointer\n");
-            //     fflush(stdout);
-            // }
-            vTaskDelay(MB_REPORTING_PERIOD);
-        } else {
-            ESP_LOGI(TAG, "Modbus task oops... I should be handling errors here\n");
-        }
+            vTaskDelay(((1000*60)*5)/portTICK_PERIOD_MS); // 5min?
     }
 }
 
