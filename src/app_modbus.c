@@ -42,7 +42,7 @@ static void* master_get_param_data(const mb_parameter_descriptor_t* param_descri
        switch(param_descriptor->mb_param_type)
        {
            case MB_PARAM_HOLDING:
-               instance_ptr = ((void*)&holding_reg_params + param_descriptor->param_offset - 1);
+               instance_ptr = ((void*)(&holding_reg_params + param_descriptor->param_offset - 1));
                break;
            default:
                instance_ptr = NULL;
