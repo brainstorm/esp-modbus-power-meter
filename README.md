@@ -62,14 +62,25 @@ several power meters supported**
 * `app_rgbled.c`: Nothing to see here, move along XD
 * `platformio.ini`: Embeeded certs for RainMaker and other flashing/building goodies.
 
-## 🏗️ Building
+## 🏗️ Building and provisioning
 
 As usual with `esp-idf`, you should consult the official [ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html) docs as the following is tailored to my personal dev environment and paths:
 
 ```sh
 conda activate esp
 . $HOME/esp/esp-idf/export.sh
-idf.py build flash monitor
+idf.py menuconfig build flash monitor
+```
+
+Make sure that menuconfig has those enabled as sometimes the build system forgets:
+
+1. Custom partition table read from `partitions.csv`
+2. esp-insights enabled.
+
+To re-provision RainMaker you'd need to kill the device's memory entirely and start over on your phone with:
+
+```sh
+idf.py erase-flash
 ```
 
 So this is just a self-reminder, YMMV wildly ;)
