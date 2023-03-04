@@ -62,6 +62,18 @@ several power meters supported**
 * `app_rgbled.c`: Nothing to see here, move along XD
 * `platformio.ini`: Embeeded certs for RainMaker and other flashing/building goodies.
 
+## 🏗️ Building
+
+As usual with `esp-idf`, you should consult the official [ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html) docs as the following is tailored to my personal dev environment and paths:
+
+```sh
+conda activate esp
+. $HOME/esp/esp-idf/export.sh
+idf.py build flash monitor
+```
+
+So this is just a self-reminder, YMMV wildly ;)
+
 ## ✋ How can you contribute?
 
 1. Review your own power meter's manual and find the register(s) listing.
